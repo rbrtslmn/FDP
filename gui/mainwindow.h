@@ -24,8 +24,13 @@ public:
 
 protected slots:
     void choosePath();
+    void startDownloads();
 
     void debug1(float Bps);
+
+protected:
+    void saveSettings();
+    void loadSettings();
 
 private:
     Ui::MainWindow *ui;

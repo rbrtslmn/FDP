@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QSettings>
 
 #include <net/fwdownload.h>
 
@@ -17,10 +18,14 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
+    loadSettings();
+
     ui->tableView->setModel(downloadTable);
 
-    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
 
+
+    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(startDownloads()));
 
 
     // *************** start of debugging
@@ -29,13 +34,21 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(setPlainText(QString)));
 
     connect(debugDl, SIGNAL(speed(float)), this, SLOT(debug1(float)));
-
+    connect(debugDl, SIGNAL(error(QString)), ui->statusBar, SLOT(showMessage(QString)));
 
     // debugDl->start("http://cdimage.debian.org/debian-cd/7.7.0/multi-arch/iso-cd/debian-7.7.0-amd64-i386-netinst.iso", "/home/r/test.iso");
     // debugDl->start("http://caesar.acc.umu.se/debian-cd/7.7.0/multi-arch/iso-cd/debian-7.7.0-amd64-i386-netinst.iso", "/home/r/test.iso");
 
+#if 1
+#endif
+}
 
-    // debugDl->start("http://download.qt-project.org/official_releases/qt/5.3/5.3.2/qt-opensource-linux-x64-android-5.3.2.run", "/home/r/test.iso");
+MainWindow::~MainWindow() {
+    saveSettings();
+    daemon->stop();
+    delete daemon;
+    delete downloadTable;
+    delete ui;
 }
 
 void MainWindow::choosePath() {
@@ -48,6 +61,13 @@ void MainWindow::choosePath() {
     }
 }
 
+void MainWindow::startDownloads() {
+    QStringList list = ui->plainTextEdit->toPlainText().split("\n");
+    for(int i=0; i<list.length(); i++) {
+
+    }
+}
+
 void MainWindow::debug1(float Bps) {
     int i=0;
     while(Bps >= 1000 && i<2) {
@@ -57,11 +77,18 @@ void MainWindow::debug1(float Bps) {
     ui->statusBar->showMessage(tr("Speed: %1 %2%3").arg(Bps).arg(i<1?"":(i<2?"ki":"Mi")).arg("B/s"));
 }
 
-MainWindow::~MainWindow() {
-    daemon->stop();
-    delete daemon;
-    delete downloadTable;
-    delete ui;
+void MainWindow::saveSettings() {
+    QSettings settings("Codingspezis", "FDP");
+    settings.setValue("username", ui->lineEdit->text());
+    settings.setValue("password", ui->lineEdit_2->text());
+    settings.setValue("path",     ui->lineEdit_3->text());
+}
+
+void MainWindow::loadSettings() {
+    QSettings settings("Codingspezis", "FDP");
+    ui->lineEdit->setText(settings.value("username").toString());
+    ui->lineEdit_2->setText(settings.value("password").toString());
+    ui->lineEdit_3->setText(settings.value("path").toString());
 }
 
 } // end of namespace gui
