@@ -23,6 +23,8 @@ public:
     ~MainWindow();
 
 protected slots:
+    void choosePath();
+
     void debug1(float Bps);
 
 private:

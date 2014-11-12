@@ -1,7 +1,9 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QFileDialog>
 
 #include <net/fwdownload.h>
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 namespace fdp {
 namespace gui {
@@ -15,8 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
-
     ui->tableView->setModel(downloadTable);
+
+    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
+
+
 
     // *************** start of debugging
     daemon->listen();
@@ -31,6 +36,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     // debugDl->start("http://download.qt-project.org/official_releases/qt/5.3/5.3.2/qt-opensource-linux-x64-android-5.3.2.run", "/home/r/test.iso");
+}
+
+void MainWindow::choosePath() {
+    QFileDialog dirDialog;
+    dirDialog.setFileMode(QFileDialog::DirectoryOnly);
+    dirDialog.setDirectory(ui->lineEdit_3->text());
+    if(dirDialog.exec()) {
+        if(!dirDialog.selectedFiles().isEmpty())
+            ui->lineEdit_3->setText(dirDialog.selectedFiles().at(0));
+    }
 }
 
 void MainWindow::debug1(float Bps) {
