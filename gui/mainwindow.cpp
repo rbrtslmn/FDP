@@ -20,27 +20,15 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("Free-Way.me Download Program");
     loadSettings();
 
+    downloadManager = new model::DownloadManager(ui->spinBox->value());
     ui->tableView->setModel(downloadTable);
 
-
-
-    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(startDownloads()));
-
-
-    // *************** start of debugging
     daemon->listen();
 
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(setPlainText(QString)));
-
-    connect(debugDl, SIGNAL(speed(float)), this, SLOT(debug1(float)));
-    connect(debugDl, SIGNAL(error(QString)), ui->statusBar, SLOT(showMessage(QString)));
-
-    // debugDl->start("http://cdimage.debian.org/debian-cd/7.7.0/multi-arch/iso-cd/debian-7.7.0-amd64-i386-netinst.iso", "/home/r/test.iso");
-    // debugDl->start("http://caesar.acc.umu.se/debian-cd/7.7.0/multi-arch/iso-cd/debian-7.7.0-amd64-i386-netinst.iso", "/home/r/test.iso");
-
-#if 1
-#endif
+    connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
+    connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(startDownloads()));
 }
 
 MainWindow::~MainWindow() {
@@ -64,7 +52,7 @@ void MainWindow::choosePath() {
 void MainWindow::startDownloads() {
     QStringList list = ui->plainTextEdit->toPlainText().split("\n");
     for(int i=0; i<list.length(); i++) {
-
+        downloadManager->addLink(ui->lineEdit->text(), ui->lineEdit_2->text(), ui->lineEdit_3->text(), list.at(i));
     }
 }
 
@@ -79,16 +67,27 @@ void MainWindow::debug1(float Bps) {
 
 void MainWindow::saveSettings() {
     QSettings settings("Codingspezis", "FDP");
+    // user interface
     settings.setValue("username", ui->lineEdit->text());
-    settings.setValue("password", ui->lineEdit_2->text());
+    settings.setValue("password", ui->checkBox->checkState()?ui->lineEdit_2->text():"");
     settings.setValue("path",     ui->lineEdit_3->text());
+    settings.setValue("parallel", ui->spinBox->value());
+    settings.setValue("savepass", ui->checkBox->checkState());
+    // size
+    settings.setValue("width", width());
+    settings.setValue("height", height());
 }
 
 void MainWindow::loadSettings() {
     QSettings settings("Codingspezis", "FDP");
+    // user interface
     ui->lineEdit->setText(settings.value("username").toString());
     ui->lineEdit_2->setText(settings.value("password").toString());
     ui->lineEdit_3->setText(settings.value("path").toString());
+    ui->spinBox->setValue(settings.value("parallel").toInt());
+    ui->checkBox->setChecked(settings.value("savepass").toBool());
+    // size
+    resize(settings.value("width").toInt(), settings.value("height").toInt());
 }
 
 } // end of namespace gui

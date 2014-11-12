@@ -5,7 +5,9 @@
 
 #include <net/httpdaemon.h>
 #include <net/fwdownload.h>
+
 #include <model/downloadtable.h>
+#include <model/downloadmanager.h>
 
 namespace Ui {
     class MainWindow;
@@ -32,9 +34,10 @@ protected:
     void saveSettings();
     void loadSettings();
 
-private:
+protected:
     Ui::MainWindow *ui;
     model::DownloadTable *downloadTable;
+    model::DownloadManager *downloadManager;
     net::HTTPDaemon *daemon;
     net::FWDownload *debugDl;
 

@@ -18,7 +18,8 @@ SOURCES += \
     crypt/aesdecoder.cpp \
     net/fdlogin.cpp \
     net/fwdownload.cpp \
-    model/downloadtable.cpp
+    model/downloadtable.cpp \
+    model/downloadmanager.cpp
 
 HEADERS  += \
     gui/mainwindow.h \
@@ -26,7 +27,8 @@ HEADERS  += \
     crypt/aesdecoder.h \
     net/fdlogin.h \
     net/fwdownload.h \
-    model/downloadtable.h
+    model/downloadtable.h \
+    model/downloadmanager.h
 
 FORMS    += \
     gui/mainwindow.ui
