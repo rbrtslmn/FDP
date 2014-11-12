@@ -5,6 +5,9 @@
 
 #include <QDebug>
 
+namespace fdp {
+namespace crypt {
+
 int AESDecoder::Decode(void* buffer, int buffer_len, char* IV, char* key, int key_len) {
     MCRYPT td = mcrypt_module_open("rijndael-128", NULL, "cbc", NULL);
     int blocksize = mcrypt_enc_get_block_size(td);
@@ -31,3 +34,6 @@ bool AESDecoder::Decode(QByteArray crypted, QByteArray key, QByteArray &plain) {
     }
     return false;
 }
+
+} // end of namespace crypt
+} // end of namespace fdp

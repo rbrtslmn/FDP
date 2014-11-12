@@ -1,10 +1,11 @@
-#include "mainwindow.h"
 #include <QApplication>
 
-int main(int argc, char *argv[])
-{
+#include <gui/mainwindow.h>
+
+int main(int argc, char *argv[]) {
+
     QApplication a(argc, argv);
-    MainWindow w;
+    fdp::gui::MainWindow w;
     w.show();
 
     return a.exec();

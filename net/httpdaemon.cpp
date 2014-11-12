@@ -4,7 +4,10 @@
 #include <QUrl>
 #include <QScriptEngine>
 
-#include "aesdecoder.h"
+#include <crypt/aesdecoder.h>
+
+namespace fdp {
+namespace net {
 
 HTTPDaemon::HTTPDaemon() :
     QObject(),
@@ -83,7 +86,7 @@ bool HTTPDaemon::parseEncryptedLinks(const QString data) {
         QByteArray cipher = QByteArray::fromBase64(crypted.toLatin1());
         QByteArray key =    QByteArray::fromHex(jse.toString().toLatin1());
         QByteArray ba;
-        bool returnValue = AESDecoder::Decode(cipher, key, ba);
+        bool returnValue = crypt::AESDecoder::Decode(cipher, key, ba);
         if(returnValue)
             emit receivedLinks(QString(ba));
         return returnValue;
@@ -119,8 +122,9 @@ bool HTTPDaemon::parsePlainLinks(const QString data) {
 
 void HTTPDaemon::handleConnectionDestoyed() {
     QTcpSocket *client = qobject_cast<QTcpSocket *>(sender());
-    if(client) {
+    if(client)
         client->disconnect();
-        qDebug() << client->localAddress().toString() << " disconnected";
-    }
 }
+
+} // end of namespace net
+} // end of namespace fdp

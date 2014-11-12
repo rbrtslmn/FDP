@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 
+namespace fdp {
+namespace net {
+
 class FDLogin : public QObject {
 
     Q_OBJECT
@@ -24,5 +27,8 @@ protected: // objects
     QNetworkAccessManager *naManager;
 
 };
+
+} // end of namespace net
+} // end of namespace fdp
 
 #endif // FDLOGIN_H

@@ -11,23 +11,25 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FDP
 TEMPLATE = app
 
+SOURCES += \
+    main.cpp\
+    gui/mainwindow.cpp \
+    net/httpdaemon.cpp \
+    crypt/aesdecoder.cpp \
+    net/fdlogin.cpp \
+    net/fwdownload.cpp \
+    model/downloadtable.cpp
 
-SOURCES += main.cpp\
-    mainwindow.cpp \
-    httpdaemon.cpp \
-    aesdecoder.cpp \
-    fdlogin.cpp \
-    fwdownload.cpp \
-    downloadtable.cpp
+HEADERS  += \
+    gui/mainwindow.h \
+    net/httpdaemon.h \
+    crypt/aesdecoder.h \
+    net/fdlogin.h \
+    net/fwdownload.h \
+    model/downloadtable.h
 
-HEADERS  += mainwindow.h \
-    httpdaemon.h \
-    aesdecoder.h \
-    fdlogin.h \
-    fwdownload.h \
-    downloadtable.h
-
-FORMS    += mainwindow.ui
+FORMS    += \
+    gui/mainwindow.ui
 
 LIBS += -lmcrypt
 

@@ -3,13 +3,16 @@
 
 #include <QMainWindow>
 
-#include "httpdaemon.h"
-#include "downloadtable.h"
-#include "fwdownload.h"
+#include <net/httpdaemon.h>
+#include <net/fwdownload.h>
+#include <model/downloadtable.h>
 
 namespace Ui {
     class MainWindow;
 }
+
+namespace fdp {
+namespace gui {
 
 class MainWindow : public QMainWindow {
 
@@ -24,10 +27,13 @@ protected slots:
 
 private:
     Ui::MainWindow *ui;
-    DownloadTable *downloadTable;
-    HTTPDaemon *daemon;
-    FWDownload *debugDl;
+    model::DownloadTable *downloadTable;
+    net::HTTPDaemon *daemon;
+    net::FWDownload *debugDl;
 
 };
+
+} // end of namespace gui
+} // end of namespace fdp
 
 #endif // MAINWINDOW_H

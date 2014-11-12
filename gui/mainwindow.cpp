@@ -1,14 +1,17 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "fwdownload.h"
+#include <net/fwdownload.h>
+
+namespace fdp {
+namespace gui {
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    downloadTable(new DownloadTable()),
-    daemon(new HTTPDaemon()),
-    debugDl(new FWDownload())
+    downloadTable(new model::DownloadTable()),
+    daemon(new net::HTTPDaemon()),
+    debugDl(new net::FWDownload())
 {
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
@@ -45,3 +48,6 @@ MainWindow::~MainWindow() {
     delete downloadTable;
     delete ui;
 }
+
+} // end of namespace gui
+} // end of namespace fdp

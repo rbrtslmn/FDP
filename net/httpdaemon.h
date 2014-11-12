@@ -3,6 +3,9 @@
 
 #include <QTcpServer>
 
+namespace fdp {
+namespace net {
+
 class HTTPDaemon : public QObject {
 
     Q_OBJECT
@@ -35,5 +38,8 @@ protected: // objects
     quint16 port;
 
 };
+
+} // end of namespace net
+} // end of namespace fdp
 
 #endif // HTTPDAEMON_H

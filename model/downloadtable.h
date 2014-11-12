@@ -3,6 +3,9 @@
 
 #include <QAbstractItemModel>
 
+namespace fdp {
+namespace model {
+
 class DownloadTable : public QAbstractItemModel {
 
     Q_OBJECT
@@ -16,5 +19,8 @@ public:
     virtual QVariant data(const QModelIndex &index, int role) const;
 
 };
+
+} // end of namespace model
+} // end of namespace fdp
 
 #endif // DOWNLOADTABLE_H

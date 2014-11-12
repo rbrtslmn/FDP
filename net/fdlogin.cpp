@@ -5,6 +5,9 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
+namespace fdp {
+namespace net {
+
 FDLogin::FDLogin() :
     QObject(),
     naManager(new QNetworkAccessManager(this))
@@ -42,3 +45,6 @@ void FDLogin::login(QString user, QString pass) {
     url += "&id=1";
     naManager->get(QNetworkRequest(QUrl(url)));
 }
+
+} // end of namespace net
+} // end of namespace fdp

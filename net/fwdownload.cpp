@@ -2,6 +2,9 @@
 
 #include <QNetworkReply>
 
+namespace fdp {
+namespace net {
+
 FWDownload::FWDownload() :
     QObject(),
     naManager(new QNetworkAccessManager()),
@@ -74,3 +77,6 @@ void FWDownload::handleFinish() {
         start(url.toString(), output.fileName());
     } else emit finished();
 }
+
+} // end of namespace net
+} // end of namespace fdp

@@ -1,5 +1,8 @@
 #include "downloadtable.h"
 
+namespace fdp {
+namespace model {
+
 DownloadTable::DownloadTable(QObject *parent) :
     QAbstractItemModel(parent)
 { }
@@ -27,3 +30,6 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         return tr("test %1 %2").arg(index.row()).arg(index.column());
     else return QVariant();
 }
+
+} // end of namespace model
+} // end of namespace fdp

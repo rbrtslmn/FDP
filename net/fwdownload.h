@@ -6,6 +6,9 @@
 #include <QNetworkRequest>
 #include <QFile>
 
+namespace fdp {
+namespace net {
+
 class FWDownload : public QObject {
 
     Q_OBJECT
@@ -38,7 +41,9 @@ protected:
     int speedIntervalMs;
     QFile output;
 
-
 };
+
+} // end of namespace net
+} // end of namespace fdp
 
 #endif // FWDOWNLOAD_H
