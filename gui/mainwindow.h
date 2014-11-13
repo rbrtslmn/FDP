@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 #include <net/httpdaemon.h>
 #include <net/downloadmanager.h>
@@ -25,6 +26,7 @@ public:
 protected slots:
     void choosePath();
     void addDownloads();
+    void displaySpeedSum();
 
 protected:
     void saveSettings();
@@ -35,6 +37,7 @@ protected:
     model::DownloadTable *downloadTable;
     net::HTTPDaemon *daemon;
     net::DownloadManager *downloadManager;
+    QTimer timer;
 
 };
 

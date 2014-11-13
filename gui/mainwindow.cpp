@@ -24,7 +24,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableView->setModel(downloadTable);
 
     daemon->listen();
+    timer.start(1000);
 
+    connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
@@ -37,6 +39,15 @@ MainWindow::~MainWindow() {
     delete daemon;
     delete downloadTable;
     delete ui;
+}
+
+void MainWindow::displaySpeedSum() {
+    float speedSum = 0;
+    for(int i=0; i<downloadManager->numberOfDownloads(); i++) {
+        if(downloadManager->downloadAt(i).status == net::StatInProgress)
+            speedSum += downloadManager->downloadAt(i).speed;
+    }
+    ui->statusBar->showMessage(model::DownloadTable::B2String(speedSum).append("/s"));
 }
 
 void MainWindow::choosePath() {

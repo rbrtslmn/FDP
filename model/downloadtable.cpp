@@ -15,9 +15,6 @@ DownloadTable::DownloadTable(const net::DownloadManager *downloadManager, QObjec
 void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationType prop) {
     (void)downloadIdx;
     (void)prop;
-
-    // TODO: do not refresh the whole table
-
     beginResetModel();
     endResetModel();
 }
@@ -29,7 +26,7 @@ int DownloadTable::rowCount(const QModelIndex &parent) const {
 
 int DownloadTable::columnCount(const QModelIndex &parent) const {
     (void)parent;
-    return 6;
+    return 8;
 }
 
 QVariant DownloadTable::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -37,17 +34,21 @@ QVariant DownloadTable::headerData(int section, Qt::Orientation orientation, int
         if (orientation == Qt::Horizontal) {
             switch (section) {
                 case 0:
-                    return tr("File");
+                    return "File";
                 case 1:
-                    return tr("Status");
+                    return "Status";
                 case 2:
-                    return tr("Progress");
+                    return "Size";
                 case 3:
-                    return tr("Speed");
+                    return "Progress";
                 case 4:
-                    return tr("URL");
+                    return "Speed";
                 case 5:
-                    return tr("Path");
+                    return "Remaining";
+                case 6:
+                    return "URL";
+                case 7:
+                    return "Path";
             }
         }
     }
@@ -66,16 +67,30 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         case 1:
             return DownloadStatus2String(downloadManager->downloadAt(index.row()).status);
         case 2:
-            return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size);
+            return B2String(downloadManager->downloadAt(index.row()).size);
         case 3:
-            return Speed2String(downloadManager->downloadAt(index.row()).speed);
+            return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size);
         case 4:
-            return downloadManager->downloadAt(index.row()).url;
+            return B2String(downloadManager->downloadAt(index.row()).speed).append("/s");
         case 5:
+            return Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed);
+        case 6:
+            return downloadManager->downloadAt(index.row()).url;
+        case 7:
             return downloadManager->downloadAt(index.row()).path;
         }
     }
     return QVariant();
+}
+
+QString DownloadTable::Remaining(qint64 curr, qint64 size, float Bps) {
+    float s = (size - curr)/Bps;
+    int i = 0;
+    while(s >= 60 && i<2) {
+        s /= 60;
+        i++;
+    }
+    return tr("%1 %2").arg(s).arg(i<1?"s":(i<2?"min":"h"));
 }
 
 QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
@@ -92,13 +107,13 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
     return "";
 }
 
-QString DownloadTable::Speed2String(float Bps) {
+QString DownloadTable::B2String(float Bps) {
     int i=0;
     while(Bps >= 1000 && i<2) {
         Bps /= 1024;
         i++;
     }
-    return tr("%1 %2%3").arg(Bps).arg(i<1?"":(i<2?"ki":"Mi")).arg("B/s");
+    return tr("%1 %2B").arg(Bps).arg(i<1?"":(i<2?"ki":"Mi"));
 }
 
 } // end of namespace model
