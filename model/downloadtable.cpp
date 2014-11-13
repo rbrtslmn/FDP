@@ -1,5 +1,7 @@
 #include "downloadtable.h"
 
+#include <QProgressBar>
+
 namespace fdp {
 namespace model {
 
@@ -64,7 +66,7 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         case 1:
             return DownloadStatus2String(downloadManager->downloadAt(index.row()).status);
         case 2:
-            return tr("%1").arg(downloadManager->downloadAt(index.row()).progress);
+            return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size);
         case 3:
             return Speed2String(downloadManager->downloadAt(index.row()).speed);
         case 4:

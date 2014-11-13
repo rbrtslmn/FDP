@@ -83,10 +83,17 @@ bool HTTPDaemon::parseEncryptedLinks(const QString data) {
     parsePostValue(data, "crypted", crypted)) {
         QScriptEngine scriptEngine;
         QScriptValue jse = scriptEngine.evaluate(jk + ";f();");
+
+        qDebug() << jk;
+        qDebug() << jse.toString();
+
         QByteArray cipher = QByteArray::fromBase64(crypted.toLatin1());
         QByteArray key =    QByteArray::fromHex(jse.toString().toLatin1());
         QByteArray ba;
         bool returnValue = crypt::AESDecoder::Decode(cipher, key, ba);
+
+        qDebug() << "return: " << returnValue;
+
         if(returnValue)
             emit receivedLinks(QString(ba));
         return returnValue;

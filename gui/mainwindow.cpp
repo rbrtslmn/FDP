@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     daemon->listen();
 
-    connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(setPlainText(QString)));
+    connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(addDownloads()));
@@ -56,6 +56,7 @@ void MainWindow::addDownloads() {
         if(!url.isEmpty())
             downloadManager->addLink(url, net::LinkGenerator::GenerateFWLink(ui->lineEdit->text(), ui->lineEdit_2->text(), url), ui->lineEdit_3->text());
     }
+    ui->plainTextEdit->clear();
 }
 
 void MainWindow::saveSettings() {
