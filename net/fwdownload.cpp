@@ -98,10 +98,15 @@ bool FWDownload::openFile() {
     // parse filename
     QString remoteFile = download->rawHeader("Content-Disposition");
     int idx = remoteFile.indexOf(QRegExp("filename=\".*\""));
-    if(idx != -1)
+    if(idx != -1) {
         remoteFile = remoteFile.mid(idx).split("\"")[1];
-    else
-        remoteFile = QUrl(url).fileName();
+    } else {
+        int idx = 0;
+        while(QFile(tr("%1unnamed-%2").arg(path).arg(idx)).exists())
+            idx++;
+        remoteFile = tr("unnamed-%1").arg(idx);
+    }
+    emit receivedFilename(remoteFile);
     // try to open it
     output.setFileName(tr("%1%2").arg(path).arg(remoteFile));
     if (!output.open(QIODevice::WriteOnly)) {

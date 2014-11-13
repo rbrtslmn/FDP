@@ -16,19 +16,19 @@ SOURCES += \
     gui/mainwindow.cpp \
     net/httpdaemon.cpp \
     crypt/aesdecoder.cpp \
-    net/fdlogin.cpp \
     net/fwdownload.cpp \
     model/downloadtable.cpp \
-    model/downloadmanager.cpp
+    net/downloadmanager.cpp \
+    net/linkgenerator.cpp
 
 HEADERS  += \
     gui/mainwindow.h \
     net/httpdaemon.h \
     crypt/aesdecoder.h \
-    net/fdlogin.h \
     net/fwdownload.h \
     model/downloadtable.h \
-    model/downloadmanager.h
+    net/downloadmanager.h \
+    net/linkgenerator.h
 
 FORMS    += \
     gui/mainwindow.ui

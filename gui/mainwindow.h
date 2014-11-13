@@ -4,10 +4,8 @@
 #include <QMainWindow>
 
 #include <net/httpdaemon.h>
-#include <net/fwdownload.h>
-
+#include <net/downloadmanager.h>
 #include <model/downloadtable.h>
-#include <model/downloadmanager.h>
 
 namespace Ui {
     class MainWindow;
@@ -26,9 +24,7 @@ public:
 
 protected slots:
     void choosePath();
-    void startDownloads();
-
-    void debug1(float Bps);
+    void addDownloads();
 
 protected:
     void saveSettings();
@@ -37,9 +33,8 @@ protected:
 protected:
     Ui::MainWindow *ui;
     model::DownloadTable *downloadTable;
-    model::DownloadManager *downloadManager;
     net::HTTPDaemon *daemon;
-    net::FWDownload *debugDl;
+    net::DownloadManager *downloadManager;
 
 };
 

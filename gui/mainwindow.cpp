@@ -2,6 +2,7 @@
 #include <QSettings>
 
 #include <net/fwdownload.h>
+#include <net/linkgenerator.h>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -12,15 +13,14 @@ namespace gui {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    downloadTable(new model::DownloadTable()),
-    daemon(new net::HTTPDaemon()),
-    debugDl(new net::FWDownload())
+    daemon(new net::HTTPDaemon())
 {
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
     loadSettings();
 
-    downloadManager = new model::DownloadManager(ui->spinBox->value());
+    downloadManager = new net::DownloadManager(ui->spinBox->value());
+    downloadTable = new model::DownloadTable(downloadManager);
     ui->tableView->setModel(downloadTable);
 
     daemon->listen();
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(setPlainText(QString)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(startDownloads()));
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(addDownloads()));
 }
 
 MainWindow::~MainWindow() {
@@ -49,20 +49,13 @@ void MainWindow::choosePath() {
     }
 }
 
-void MainWindow::startDownloads() {
+void MainWindow::addDownloads() {
     QStringList list = ui->plainTextEdit->toPlainText().split("\n");
     for(int i=0; i<list.length(); i++) {
-        downloadManager->addLink(ui->lineEdit->text(), ui->lineEdit_2->text(), ui->lineEdit_3->text(), list.at(i));
+        QString url = list.at(i).trimmed();
+        if(!url.isEmpty())
+            downloadManager->addLink(url, net::LinkGenerator::GenerateFWLink(ui->lineEdit->text(), ui->lineEdit_2->text(), url), ui->lineEdit_3->text());
     }
-}
-
-void MainWindow::debug1(float Bps) {
-    int i=0;
-    while(Bps >= 1000 && i<2) {
-        Bps /= 1024;
-        i++;
-    }
-    ui->statusBar->showMessage(tr("Speed: %1 %2%3").arg(Bps).arg(i<1?"":(i<2?"ki":"Mi")).arg("B/s"));
 }
 
 void MainWindow::saveSettings() {

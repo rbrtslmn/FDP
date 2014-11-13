@@ -16,7 +16,6 @@ class FWDownload : public QObject {
 public:
     FWDownload();
     ~FWDownload();
-
     void start(const QString url, const QString path);
     void stop(bool deleteFile);
 
@@ -25,6 +24,7 @@ signals:
     void progress(qint64 curr, qint64 size);
     void finished();
     void error(QString message);
+    void receivedFilename(QString filename);
 
 protected slots:
     void handleProgress(qint64 curr, qint64 size);
@@ -39,7 +39,6 @@ protected:
 protected:
     QString path;
     QString url;
-
     QNetworkAccessManager *naManager;
     QNetworkReply *download;
     QNetworkRequest request;
@@ -47,7 +46,6 @@ protected:
     qint64 lastProgress;
     int speedIntervalMs;
     QFile output;
-
 
 };
 
