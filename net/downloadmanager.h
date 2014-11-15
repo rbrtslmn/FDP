@@ -72,6 +72,7 @@ protected slots:
 
 protected:
     void startDownload(DownloadInformation downloadInformation);
+    bool shouldReload(int i);
 
 protected:
     QList<DownloadInformation> downloadList;

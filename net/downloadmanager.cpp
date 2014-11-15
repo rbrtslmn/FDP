@@ -56,9 +56,7 @@ void DownloadManager::checkDownloads() {
         bool reloadThis = false;
         // reloading failed parts at occurence
         if((reloadSettings &  gui::ReloadAfterRest) == 0) {
-            if((downloadList.at(i).status == StatFWError && (reloadSettings & gui::ReloadFWError))
-            || (downloadList.at(i).status == StatTimeout && (reloadSettings & gui::ReloadTimeout))
-            || (downloadList.at(i).status == StatError   && (reloadSettings & gui::ReloadNetError)))
+            if(shouldReload(i))
                 reloadThis = true;
         }
         // start pending
@@ -72,16 +70,20 @@ void DownloadManager::checkDownloads() {
     }
     // reloading failed parts when rest finished
     for(int i=0; i<downloadList.length() && canStart>0; i++) {
-        if(reloadSettings &  gui::ReloadAfterRest) {
-            if((downloadList.at(i).status == StatFWError && (reloadSettings & gui::ReloadFWError))
-            || (downloadList.at(i).status == StatTimeout && (reloadSettings & gui::ReloadTimeout))
-            || (downloadList.at(i).status == StatError   && (reloadSettings & gui::ReloadNetError))) {
+        if(reloadSettings & gui::ReloadAfterRest) {
+            if(shouldReload(i)) {
                 startDownload(downloadList.at(i));
                 downloadList[i].status = StatInProgress;
                 canStart--;
             }
         }
     }
+}
+
+bool DownloadManager::shouldReload(int i) {
+    return (downloadList.at(i).status == StatFWError && (reloadSettings & gui::ReloadFWError))
+        || (downloadList.at(i).status == StatTimeout && (reloadSettings & gui::ReloadTimeout))
+        || (downloadList.at(i).status == StatError   && (reloadSettings & gui::ReloadNetError));
 }
 
 void DownloadManager::setParallelDownloads(int parallelDownloads) {
