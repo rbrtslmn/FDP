@@ -9,12 +9,17 @@ DownloadTable::DownloadTable(const net::DownloadManager *downloadManager, QObjec
     QAbstractTableModel(parent),
     downloadManager(downloadManager)
 {
-    connect(downloadManager, SIGNAL(newInformation(int,net::InformationType)), this, SLOT(handleDownloadInformation(int,net::InformationType)));
+    // connect(downloadManager, SIGNAL(newInformation(int,net::InformationType)), this, SLOT(handleDownloadInformation(int,net::InformationType)));
 }
 
 void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationType prop) {
     (void)downloadIdx;
     (void)prop;
+    // TODO cell-wise refresh
+    refreshAll();
+}
+
+void DownloadTable::refreshAll() {
     beginResetModel();
     endResetModel();
 }
@@ -62,21 +67,29 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
     // display role
     if(role == Qt::DisplayRole) {
         switch(index.column()) {
-        case 0:
+        case 0: // file
             return downloadManager->downloadAt(index.row()).file;
-        case 1:
+        case 1: // status
             return DownloadStatus2String(downloadManager->downloadAt(index.row()).status);
-        case 2:
+        case 2: // size
+            if(downloadManager->downloadAt(index.row()).status == net::StatPending)
+                return "";
             return B2String(downloadManager->downloadAt(index.row()).size);
-        case 3:
-            return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size);
-        case 4:
-            return B2String(downloadManager->downloadAt(index.row()).speed).append("/s");
-        case 5:
-            return Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed);
-        case 6:
+        case 3: // progress
+            if(downloadManager->downloadAt(index.row()).size != 0)
+                return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size, 0, '0', 2);
+            return tr("0.00 %");
+        case 4: // speed
+            if(downloadManager->downloadAt(index.row()).status == net::StatInProgress)
+                return B2String(downloadManager->downloadAt(index.row()).speed).append("/s");
+            return "";
+        case 5: // remaining
+            if(downloadManager->downloadAt(index.row()).status == net::StatInProgress)
+                return Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed);
+            return "";
+        case 6: // url
             return downloadManager->downloadAt(index.row()).url;
-        case 7:
+        case 7: // path
             return downloadManager->downloadAt(index.row()).path;
         }
     } else if(role == Qt::BackgroundRole) {
@@ -107,7 +120,7 @@ QString DownloadTable::Remaining(qint64 curr, qint64 size, float Bps) {
         s /= 60;
         i++;
     }
-    return tr("%1 %2").arg(s).arg(i<1?"s":(i<2?"min":"h"));
+    return tr("%1 %2").arg(s, 0, '0', 2).arg(i<1?"s":(i<2?"min":"h"));
 }
 
 QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
@@ -134,7 +147,7 @@ QString DownloadTable::B2String(float Bps) {
         Bps /= 1024;
         i++;
     }
-    return tr("%1 %2B").arg(Bps).arg(i<1?"":(i<2?"ki":"Mi"));
+    return tr("%1 %2B").arg(Bps, 0, '0', 2).arg(i<1?"":(i<2?"ki":"Mi"));
 }
 
 } // end of namespace model

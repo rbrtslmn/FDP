@@ -26,6 +26,7 @@ public:
 
 protected slots:
     void handleDownloadInformation(int downloadIdx, net::InformationType prop);
+    void refreshAll();
 
 protected:
     const net::DownloadManager *downloadManager;

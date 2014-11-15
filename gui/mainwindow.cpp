@@ -22,13 +22,16 @@ MainWindow::MainWindow(QWidget *parent) :
     downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings());
     downloadTable = new model::DownloadTable(downloadManager);
     ui->tableView->setModel(downloadTable);
-    ui->tableView->verticalHeader()->setHidden(true);
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableView->verticalHeader()->setHidden(true);
 
     daemon->listen();
     timer.start(1000);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
+    connect(&timer, SIGNAL(timeout()), downloadTable, SLOT(refreshAll()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));

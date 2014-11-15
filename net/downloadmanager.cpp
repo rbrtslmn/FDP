@@ -16,6 +16,7 @@ DownloadManager::DownloadManager(int parallelDownloads, int reloadSettings, QObj
 
 void DownloadManager::setReloadSettings(int reloadSettings) {
     this->reloadSettings = reloadSettings;
+    checkDownloads();
 }
 
 void DownloadManager::check4Timeout() {
