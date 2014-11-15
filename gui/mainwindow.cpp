@@ -57,13 +57,13 @@ void MainWindow::updateReloadSettings() {
 int MainWindow::getReloadSettings() {
     int reloadSettings = 0;
     if(ui->comboBox->currentIndex()==1)
-        reloadSettings &= ReloadAfterRest;
+        reloadSettings |= ReloadAfterRest;
     if(ui->checkBox_2->isChecked())
-        reloadSettings &= ReloadFWError;
+        reloadSettings |= ReloadFWError;
     if(ui->checkBox_3->isChecked())
-        reloadSettings &= ReloadTimeout;
+        reloadSettings |= ReloadTimeout;
     if(ui->checkBox_4->isChecked())
-        reloadSettings &= ReloadNetError;
+        reloadSettings |= ReloadNetError;
     return reloadSettings;
 }
 
