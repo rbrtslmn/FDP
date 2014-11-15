@@ -1,6 +1,6 @@
 #include "downloadtable.h"
 
-#include <QProgressBar>
+#include <QPainter>
 
 namespace fdp {
 namespace model {
@@ -79,6 +79,23 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         case 7:
             return downloadManager->downloadAt(index.row()).path;
         }
+    } else if(role == Qt::BackgroundRole) {
+        if(downloadManager->downloadAt(index.row()).status == net::StatError
+        || downloadManager->downloadAt(index.row()).status == net::StatFWError
+        || downloadManager->downloadAt(index.row()).status == net::StatTimeout)
+            return QVariant(QColor(255, 100, 100));
+        /*
+        if(index.column() == 3 &&
+        (downloadManager->downloadAt(index.row()).status == net::StatInProgress ||
+         downloadManager->downloadAt(index.row()).status == net::StatFinished)) {
+            qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
+            QLinearGradient grad(QPointF(0, 1), QPointF(1, 1));
+            grad.setCoordinateMode(QGradient::ObjectBoundingMode);
+            grad.setColorAt(val , QColor(100, 255, 100));
+            grad.setColorAt(val+0.00001, Qt::white);
+            return QBrush(grad);
+        }
+        */
     }
     return QVariant();
 }
@@ -103,8 +120,12 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
         return "In Progress";
     case net::StatPending:
         return "Pending";
+    case net::StatFWError:
+        return "Free-Way.me Error";
+    case net::StatTimeout:
+        return "Timeout";
     }
-    return "";
+    return "Unknown";
 }
 
 QString DownloadTable::B2String(float Bps) {

@@ -8,6 +8,8 @@
 #include <net/downloadmanager.h>
 #include <model/downloadtable.h>
 
+#include "reloadsettings.h"
+
 namespace Ui {
     class MainWindow;
 }
@@ -23,20 +25,24 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    int parallelDownloads() const;
+
 protected slots:
     void choosePath();
     void addDownloads();
     void displaySpeedSum();
+    void updateReloadSettings();
 
 protected:
     void saveSettings();
     void loadSettings();
+    int getReloadSettings();
 
 protected:
     Ui::MainWindow *ui;
     model::DownloadTable *downloadTable;
     net::HTTPDaemon *daemon;
-    net::DownloadManager *downloadManager;
+    fdp::net::DownloadManager *downloadManager;
     QTimer timer;
 
 };

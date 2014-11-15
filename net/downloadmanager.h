@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QTimer>
 
 #include "fwdownload.h"
 
@@ -12,18 +13,19 @@ namespace net {
 enum InformationType {
     InfoNewDownload,
     InfoFilename,
-    InfoError,
     InfoProgress,
     InfoSize,
     InfoSpeed,
-    InfoFinished
+    InfoState
 };
 
 enum DownloadStatus {
     StatPending,
     StatInProgress,
     StatFinished,
-    StatError
+    StatError,
+    StatTimeout,
+    StatFWError
 };
 
 struct DownloadInformation {
@@ -37,6 +39,8 @@ struct DownloadInformation {
     float speed;
     DownloadStatus status;
     FWDownload *downloader;
+    qint64 timeoutProgress;
+    int timeoutCounter;
 };
 
 class DownloadManager : public QObject {
@@ -44,7 +48,7 @@ class DownloadManager : public QObject {
     Q_OBJECT
 
 public:
-    explicit DownloadManager(int parallelDownloads, QObject *parent = 0);
+    explicit DownloadManager(int parallelDownloads, int reloadSettings, QObject *parent = 0);
     void addLink(QString url, QString fwUrl, QString path);
     int numberOfDownloads() const;
     int numberOfDownloads(DownloadStatus status) const;
@@ -56,6 +60,7 @@ signals:
 public slots:
     void setParallelDownloads(int parallelDownloads);
     void checkDownloads();
+    void setReloadSettings(int reloadSettings);
 
 protected slots:
     void handleDownloadProgress(qint64 curr, qint64 size);
@@ -63,6 +68,7 @@ protected slots:
     void handleDownloadFinished();
     void handleDownloadError(QString msg);
     void handleDownloadFilename(QString filename);
+    void check4Timeout();
 
 protected:
     void startDownload(DownloadInformation downloadInformation);
@@ -70,6 +76,8 @@ protected:
 protected:
     QList<DownloadInformation> downloadList;
     int parallelDownloads;
+    int reloadSettings;
+    QTimer timeoutTimer;
 
 };
 

@@ -28,7 +28,8 @@ HEADERS  += \
     net/fwdownload.h \
     model/downloadtable.h \
     net/downloadmanager.h \
-    net/linkgenerator.h
+    net/linkgenerator.h \
+    gui/reloadsettings.h
 
 FORMS    += \
     gui/mainwindow.ui
