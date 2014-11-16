@@ -1,5 +1,6 @@
 #include <QFileDialog>
 #include <QSettings>
+#include <QMessageBox>
 
 #include <net/fwdownload.h>
 
@@ -95,14 +96,18 @@ void MainWindow::choosePath() {
 }
 
 void MainWindow::addDownloads() {
-    QStringList list = ui->plainTextEdit->toPlainText().split("\n");
-    for(int i=0; i<list.length(); i++) {
-        QString url = list.at(i).trimmed();
-        if(!url.isEmpty())
-            downloadManager->addLink(url, ui->lineEdit_3->text());
+    if(QDir(ui->lineEdit_3->text()).exists()) {
+        QStringList list = ui->plainTextEdit->toPlainText().split("\n");
+        for(int i=0; i<list.length(); i++) {
+            QString url = list.at(i).trimmed();
+            if(!url.isEmpty())
+                downloadManager->addLink(url, ui->lineEdit_3->text());
+        }
+        ui->plainTextEdit->clear();
+        ui->tabWidget->setCurrentIndex(1);
+    } else {
+        QMessageBox::warning(this, "Incorrect Download Path", tr("The chosen path \"%1\" isn't existing.").arg(ui->lineEdit_3->text()));
     }
-    ui->plainTextEdit->clear();
-    ui->tabWidget->setCurrentIndex(1);
 }
 
 int MainWindow::parallelDownloads() const {
