@@ -10,6 +10,7 @@
 #include "informationtype.h"
 #include "downloadstatus.h"
 #include "downloadinformation.h"
+#include "logindata.h"
 
 namespace fdp {
 namespace net {
@@ -19,8 +20,8 @@ class DownloadManager : public QObject {
     Q_OBJECT
 
 public:
-    explicit DownloadManager(const int parallelDownloads, const int reloadSettings, QObject *parent = 0);
-    void addLink(const QString url, const QString fwUrl, const QString path);
+    explicit DownloadManager(const int parallelDownloads, const int reloadSettings, const LoginData loginData, QObject *parent = 0);
+    void addLink(const QString url, const QString path);
     int numberOfDownloads() const;
     int numberOfDownloads(const DownloadStatus status) const;
     DownloadInformation downloadAt(const int index) const;
@@ -32,6 +33,7 @@ public slots:
     void setParallelDownloads(int parallelDownloads);
     void checkDownloads();
     void setReloadSettings(int reloadSettings);
+    void setLoginData(QString username, QString password);
 
 protected slots:
     void handleDownloadProgress(qint64 curr, qint64 size);
@@ -50,6 +52,7 @@ protected:
     int parallelDownloads;
     int reloadSettings;
     QTimer timeoutTimer;
+    LoginData loginData;
 
 };
 

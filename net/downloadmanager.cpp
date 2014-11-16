@@ -2,13 +2,16 @@
 
 #include <gui/reloadsettings.h>
 
+#include "linkgenerator.h"
+
 namespace fdp {
 namespace net {
 
-DownloadManager::DownloadManager(const int parallelDownloads, const int reloadSettings, QObject *parent) :
+DownloadManager::DownloadManager(const int parallelDownloads, const int reloadSettings, const LoginData loginData, QObject *parent) :
     QObject(parent),
     parallelDownloads(parallelDownloads),
-    reloadSettings(reloadSettings)
+    reloadSettings(reloadSettings),
+    loginData(loginData)
 {
     timeoutTimer.start(1000);
     connect(&timeoutTimer, SIGNAL(timeout()), this, SLOT(check4Timeout()));
@@ -35,10 +38,9 @@ void DownloadManager::check4Timeout() {
     }
 }
 
-void DownloadManager::addLink(const QString url, const QString fwUrl, const QString path) {
+void DownloadManager::addLink(const QString url, const QString path) {
     DownloadInformation newDownload;
     newDownload.url = url;
-    newDownload.fwUrl = fwUrl;
     newDownload.path = path;
     if(!newDownload.path.endsWith("/"))
         newDownload.path += "/";
@@ -51,6 +53,11 @@ void DownloadManager::addLink(const QString url, const QString fwUrl, const QStr
     downloadList.append(newDownload);
     emit newInformation(downloadList.length() - 1, InfoNewDownload);
     checkDownloads();
+}
+
+void DownloadManager::setLoginData(QString username, QString password) {
+    loginData.username = username;
+    loginData.password = password;
 }
 
 void DownloadManager::checkDownloads() {
@@ -100,7 +107,9 @@ void DownloadManager::startDownload(const DownloadInformation downloadInformatio
     connect(downloadInformation.downloader, SIGNAL(error(QString)), this, SLOT(handleDownloadError(QString)));
     connect(downloadInformation.downloader, SIGNAL(finished()), this, SLOT(handleDownloadFinished()));
     connect(downloadInformation.downloader, SIGNAL(receivedFilename(QString)), this, SLOT(handleDownloadFilename(QString)));
-    downloadInformation.downloader->start(downloadInformation.fwUrl, downloadInformation.path);
+    downloadInformation.downloader->start(
+        LinkGenerator::GenerateFWLink(loginData.username, loginData.password, downloadInformation.url),
+        downloadInformation.path);
 }
 
 void DownloadManager::handleDownloadError(QString msg) {
@@ -129,9 +138,12 @@ void DownloadManager::handleDownloadFinished() {
                 downloadList[i].status = StatFWError;
                 QFile file(downloadList[i].path.append(downloadList[i].file));
                 if(file.open(QIODevice::ReadOnly)) {
-                    if(file.readAll().contains("File offline"))
-                        downloadList[i].status = StatFileOffline;
+                    QString content = file.readAll();
                     file.close();
+                    if(content.contains("File offline."))
+                        downloadList[i].status = StatFileOffline;
+                    if(content.contains("Ung&uuml;ltiger Login"))
+                        downloadList[i].status = StatLoginError;
                 }
             }
             emit newInformation(i, InfoState);

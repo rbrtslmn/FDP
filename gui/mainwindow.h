@@ -32,6 +32,7 @@ protected slots:
     void addDownloads();
     void displaySpeedSum();
     void updateReloadSettings();
+    void handleLoginData();
 
 protected:
     void saveSettings();

@@ -11,7 +11,8 @@ enum DownloadStatus {
     StatTimeout,
     StatError,
     StatFWError,
-    StatFileOffline
+    StatFileOffline,
+    StatLoginError
 };
 
 } // end of namespace net

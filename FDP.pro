@@ -32,7 +32,8 @@ HEADERS  += \
     gui/reloadsettings.h \
     net/informationtype.h \
     net/downloadstatus.h \
-    net/downloadinformation.h
+    net/downloadinformation.h \
+    net/logindata.h
 
 FORMS    += \
     gui/mainwindow.ui

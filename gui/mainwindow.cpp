@@ -2,7 +2,6 @@
 #include <QSettings>
 
 #include <net/fwdownload.h>
-#include <net/linkgenerator.h>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -19,7 +18,10 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("Free-Way.me Download Program");
     loadSettings();
 
-    downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings());
+    net::LoginData loginData;
+    loginData.username = ui->lineEdit->text();
+    loginData.password = ui->lineEdit_2->text();
+    downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings(), loginData);
     downloadTable = new model::DownloadTable(downloadManager);
     ui->tableView->setModel(downloadTable);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -40,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_2, SIGNAL(toggled(bool)), this, SLOT(updateReloadSettings()));
     connect(ui->checkBox_3, SIGNAL(toggled(bool)), this, SLOT(updateReloadSettings()));
     connect(ui->checkBox_4, SIGNAL(toggled(bool)), this, SLOT(updateReloadSettings()));
+    connect(ui->lineEdit, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
+    connect(ui->lineEdit_2, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
 }
 
 MainWindow::~MainWindow() {
@@ -48,6 +52,10 @@ MainWindow::~MainWindow() {
     delete daemon;
     delete downloadTable;
     delete ui;
+}
+
+void MainWindow::handleLoginData() {
+    downloadManager->setLoginData(ui->lineEdit->text(), ui->lineEdit_2->text());
 }
 
 void MainWindow::updateReloadSettings() {
@@ -91,7 +99,7 @@ void MainWindow::addDownloads() {
     for(int i=0; i<list.length(); i++) {
         QString url = list.at(i).trimmed();
         if(!url.isEmpty())
-            downloadManager->addLink(url, net::LinkGenerator::GenerateFWLink(ui->lineEdit->text(), ui->lineEdit_2->text(), url), ui->lineEdit_3->text());
+            downloadManager->addLink(url, ui->lineEdit_3->text());
     }
     ui->plainTextEdit->clear();
     ui->tabWidget->setCurrentIndex(1);
