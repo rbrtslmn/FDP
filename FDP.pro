@@ -40,3 +40,5 @@ FORMS    += \
 
 LIBS += -lmcrypt
 
+RESOURCES +=
+
