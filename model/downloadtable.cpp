@@ -16,7 +16,11 @@ void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationT
     if(prop == net::InfoNewDownload) {
         beginInsertRows(QModelIndex(), downloadIdx, downloadIdx);
         endInsertRows();
-    }else {
+    }else if(prop == net::InfoNewDownload) {
+        // why does this results in empty rows?
+        beginRemoveRows(QModelIndex(), downloadIdx, downloadIdx);
+        endRemoveRows();
+    } else {
         int firstCol = 0;
         int lastCol = 0;
         if(prop == net::InfoFilename) {
@@ -79,7 +83,7 @@ QVariant DownloadTable::headerData(int section, Qt::Orientation orientation, int
 
 QVariant DownloadTable::data(const QModelIndex &index, int role) const {
     // invalid data
-    if(!index.isValid())
+    if(!index.isValid() || index.row() >= downloadManager->numberOfDownloads())
         return QVariant();
     // display role
     if(role == Qt::DisplayRole) {

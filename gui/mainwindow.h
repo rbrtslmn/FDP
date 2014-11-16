@@ -33,6 +33,7 @@ protected slots:
     void displaySpeedSum();
     void updateReloadSettings();
     void handleLoginData();
+    void handleContextMenuRequest(const QPoint &pos);
 
 protected:
     void saveSettings();

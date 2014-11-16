@@ -8,6 +8,7 @@ namespace net {
 FWDownload::FWDownload() :
     QObject(),
     naManager(new QNetworkAccessManager()),
+    download(NULL),
     speedIntervalMs(1000)
 { }
 
@@ -76,9 +77,10 @@ void FWDownload::handleProgress(qint64 curr, qint64 size) {
 
 void FWDownload::stop(bool deleteFile) {
     // if download is running
-    if(output.isOpen()) {
+    if(download != NULL) {
         stopDownload();
-        output.close();
+        if(output.isOpen())
+            output.close();
         if(deleteFile)
             output.remove();
     }

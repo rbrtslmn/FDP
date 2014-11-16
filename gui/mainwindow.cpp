@@ -1,6 +1,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QMessageBox>
+#include <QMenu>
 
 #include <net/fwdownload.h>
 
@@ -24,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     loginData.password = ui->lineEdit_2->text();
     downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings(), loginData);
     downloadTable = new model::DownloadTable(downloadManager);
+
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->setModel(downloadTable);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -34,8 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     timer.start(1000);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
-    // connect(&timer, SIGNAL(timeout()), downloadTable, SLOT(refreshAll()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
+    connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleContextMenuRequest(QPoint)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(addDownloads()));
@@ -54,6 +57,26 @@ MainWindow::~MainWindow() {
     delete downloadManager;
     delete daemon;
     delete ui;
+}
+
+void MainWindow::handleContextMenuRequest(const QPoint &pos) {
+    QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
+    QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
+    if(selectedDownloads.length() > 0) {
+        QMenu contextMenu;
+        contextMenu.addAction("Stop");
+        contextMenu.addAction("Restart");
+        contextMenu.addAction("Delete");
+        QAction* selectedItem = contextMenu.exec(globalPos);
+        if(selectedItem) {
+            if(selectedItem->text() == "Stop")
+                downloadManager->stopSelection(selectedDownloads);
+            else if(selectedItem->text() == "Restart")
+                downloadManager->restartSelection(selectedDownloads);
+            else if(selectedItem->text() == "Delete")
+                downloadManager->deleteSelection(selectedDownloads);
+        }
+    }
 }
 
 void MainWindow::handleLoginData() {

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QTimer>
+#include <QModelIndexList>
 
 #include "fwdownload.h"
 
@@ -26,8 +27,9 @@ public:
     int numberOfDownloads() const;
     int numberOfDownloads(const DownloadStatus status) const;
     DownloadInformation downloadAt(const int index) const;
-
-    // TODO: delete download
+    void stopSelection(const QModelIndexList &selection);
+    void restartSelection(const QModelIndexList &selection);
+    void deleteSelection(const QModelIndexList &selection);
 
 signals:
     void newInformation(int downloadIdx, net::InformationType prop);

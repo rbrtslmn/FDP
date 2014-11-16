@@ -6,6 +6,7 @@ namespace net {
 
 enum InformationType {
     InfoNewDownload,
+    InfoDownloadDeleted,
     InfoFilename,
     InfoProgress,
     InfoSize,
