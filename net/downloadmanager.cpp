@@ -5,7 +5,7 @@
 namespace fdp {
 namespace net {
 
-DownloadManager::DownloadManager(int parallelDownloads, int reloadSettings, QObject *parent) :
+DownloadManager::DownloadManager(const int parallelDownloads, const int reloadSettings, QObject *parent) :
     QObject(parent),
     parallelDownloads(parallelDownloads),
     reloadSettings(reloadSettings)
@@ -35,11 +35,13 @@ void DownloadManager::check4Timeout() {
     }
 }
 
-void DownloadManager::addLink(QString url, QString fwUrl, QString path) {
+void DownloadManager::addLink(const QString url, const QString fwUrl, const QString path) {
     DownloadInformation newDownload;
     newDownload.url = url;
     newDownload.fwUrl = fwUrl;
     newDownload.path = path;
+    if(!newDownload.path.endsWith("/"))
+        newDownload.path += "/";
     newDownload.status = StatPending;
     newDownload.progress = 0;
     newDownload.size = 0;
@@ -81,7 +83,7 @@ void DownloadManager::checkDownloads() {
     }
 }
 
-bool DownloadManager::shouldReload(int i) {
+bool DownloadManager::shouldReload(const int i) {
     return (downloadList.at(i).status == StatFWError && (reloadSettings & gui::ReloadFWError))
         || (downloadList.at(i).status == StatTimeout && (reloadSettings & gui::ReloadTimeout))
         || (downloadList.at(i).status == StatError   && (reloadSettings & gui::ReloadNetError));
@@ -92,7 +94,7 @@ void DownloadManager::setParallelDownloads(int parallelDownloads) {
     checkDownloads();
 }
 
-void DownloadManager::startDownload(DownloadInformation downloadInformation) {
+void DownloadManager::startDownload(const DownloadInformation downloadInformation) {
     connect(downloadInformation.downloader, SIGNAL(progress(qint64,qint64)), this, SLOT(handleDownloadProgress(qint64,qint64)));
     connect(downloadInformation.downloader, SIGNAL(speed(float)), this, SLOT(handleDownloadSpeed(float)));
     connect(downloadInformation.downloader, SIGNAL(error(QString)), this, SLOT(handleDownloadError(QString)));
@@ -125,6 +127,12 @@ void DownloadManager::handleDownloadFinished() {
             // free-way.me error
             if(downloadList[i].file.startsWith("unnamed") && downloadList[i].size < 1024) {
                 downloadList[i].status = StatFWError;
+                QFile file(downloadList[i].path.append(downloadList[i].file));
+                if(file.open(QIODevice::ReadOnly)) {
+                    if(file.readAll().contains("File offline"))
+                        downloadList[i].status = StatFileOffline;
+                    file.close();
+                }
             }
             emit newInformation(i, InfoState);
             break;
@@ -165,7 +173,7 @@ void DownloadManager::handleDownloadFilename(QString filename) {
     }
 }
 
-DownloadInformation DownloadManager::downloadAt(int index) const {
+DownloadInformation DownloadManager::downloadAt(const int index) const {
     return downloadList[index];
 }
 
@@ -173,7 +181,7 @@ int DownloadManager::numberOfDownloads() const {
     return downloadList.length();
 }
 
-int DownloadManager::numberOfDownloads(DownloadStatus status) const {
+int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
     int returnValue = 0;
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList.at(i).status == status) {

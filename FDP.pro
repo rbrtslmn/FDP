@@ -29,7 +29,10 @@ HEADERS  += \
     model/downloadtable.h \
     net/downloadmanager.h \
     net/linkgenerator.h \
-    gui/reloadsettings.h
+    gui/reloadsettings.h \
+    net/informationtype.h \
+    net/downloadstatus.h \
+    net/downloadinformation.h
 
 FORMS    += \
     gui/mainwindow.ui

@@ -95,6 +95,7 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
     } else if(role == Qt::BackgroundRole) {
         if(downloadManager->downloadAt(index.row()).status == net::StatError
         || downloadManager->downloadAt(index.row()).status == net::StatFWError
+        || downloadManager->downloadAt(index.row()).status == net::StatFileOffline
         || downloadManager->downloadAt(index.row()).status == net::StatTimeout)
             return QVariant(QColor(255, 100, 100));
         /*
@@ -137,6 +138,8 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
         return "Free-Way.me Error";
     case net::StatTimeout:
         return "Timeout";
+    case net::StatFileOffline:
+        return "File Offline";
     }
     return "Unknown";
 }

@@ -7,52 +7,23 @@
 
 #include "fwdownload.h"
 
+#include "informationtype.h"
+#include "downloadstatus.h"
+#include "downloadinformation.h"
+
 namespace fdp {
 namespace net {
-
-enum InformationType {
-    InfoNewDownload,
-    InfoFilename,
-    InfoProgress,
-    InfoSize,
-    InfoSpeed,
-    InfoState
-};
-
-enum DownloadStatus {
-    StatPending,
-    StatInProgress,
-    StatFinished,
-    StatError,
-    StatTimeout,
-    StatFWError
-};
-
-struct DownloadInformation {
-    QString file;
-    QString path;
-    QString url;
-    QString fwUrl;
-    QString error;
-    qint64 size;
-    qint64 progress;
-    float speed;
-    DownloadStatus status;
-    FWDownload *downloader;
-    qint64 timeoutProgress;
-    int timeoutCounter;
-};
 
 class DownloadManager : public QObject {
 
     Q_OBJECT
 
 public:
-    explicit DownloadManager(int parallelDownloads, int reloadSettings, QObject *parent = 0);
-    void addLink(QString url, QString fwUrl, QString path);
+    explicit DownloadManager(const int parallelDownloads, const int reloadSettings, QObject *parent = 0);
+    void addLink(const QString url, const QString fwUrl, const QString path);
     int numberOfDownloads() const;
-    int numberOfDownloads(DownloadStatus status) const;
-    DownloadInformation downloadAt(int index) const;
+    int numberOfDownloads(const DownloadStatus status) const;
+    DownloadInformation downloadAt(const int index) const;
 
 signals:
     void newInformation(int downloadIdx, net::InformationType prop);
@@ -71,8 +42,8 @@ protected slots:
     void check4Timeout();
 
 protected:
-    void startDownload(DownloadInformation downloadInformation);
-    bool shouldReload(int i);
+    void startDownload(const DownloadInformation downloadInformation);
+    bool shouldReload(const int i);
 
 protected:
     QList<DownloadInformation> downloadList;
