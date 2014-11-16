@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>614</width>
-    <height>357</height>
+    <height>355</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -49,7 +49,8 @@
              <string>Start Download</string>
             </property>
             <property name="icon">
-             <iconset theme="down"/>
+             <iconset resource="../res/images.qrc">
+              <normaloff>:/symbols/download.png</normaloff>:/symbols/download.png</iconset>
             </property>
            </widget>
           </item>
@@ -243,6 +244,8 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="../res/images.qrc"/>
+ </resources>
  <connections/>
 </ui>

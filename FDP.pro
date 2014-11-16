@@ -40,5 +40,6 @@ FORMS    += \
 
 LIBS += -lmcrypt
 
-RESOURCES +=
+RESOURCES += \
+    res/images.qrc
 
