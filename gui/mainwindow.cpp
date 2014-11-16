@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     timer.start(1000);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
-    connect(&timer, SIGNAL(timeout()), downloadTable, SLOT(refreshAll()));
+    // connect(&timer, SIGNAL(timeout()), downloadTable, SLOT(refreshAll()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
@@ -50,8 +50,9 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow() {
     saveSettings();
     daemon->stop();
-    delete daemon;
     delete downloadTable;
+    delete downloadManager;
+    delete daemon;
     delete ui;
 }
 

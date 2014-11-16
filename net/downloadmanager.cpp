@@ -4,6 +4,11 @@
 
 #include "linkgenerator.h"
 
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QApplication>
+
 namespace fdp {
 namespace net {
 
@@ -13,6 +18,7 @@ DownloadManager::DownloadManager(const int parallelDownloads, const int reloadSe
     reloadSettings(reloadSettings),
     loginData(loginData)
 {
+    loadDownloads();
     timeoutTimer.start(1000);
     connect(&timeoutTimer, SIGNAL(timeout()), this, SLOT(check4Timeout()));
 }
@@ -101,6 +107,7 @@ void DownloadManager::setParallelDownloads(int parallelDownloads) {
     checkDownloads();
 }
 
+// TODO: check empty password
 void DownloadManager::startDownload(const DownloadInformation downloadInformation) {
     connect(downloadInformation.downloader, SIGNAL(progress(qint64,qint64)), this, SLOT(handleDownloadProgress(qint64,qint64)));
     connect(downloadInformation.downloader, SIGNAL(speed(float)), this, SLOT(handleDownloadSpeed(float)));
@@ -136,7 +143,7 @@ void DownloadManager::handleDownloadFinished() {
             // free-way.me error
             if(downloadList[i].file.startsWith("unnamed") && downloadList[i].size < 1024) {
                 downloadList[i].status = StatFWError;
-                QFile file(downloadList[i].path.append(downloadList[i].file));
+                QFile file(downloadList[i].path + downloadList[i].file);
                 if(file.open(QIODevice::ReadOnly)) {
                     QString content = file.readAll();
                     file.close();
@@ -201,6 +208,78 @@ int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
         }
     }
     return returnValue;
+}
+
+DownloadManager::~DownloadManager() {
+    saveDownloads();
+    // TODO release memory
+}
+
+QJsonObject DownloadManager::download2Json(int idx) {
+    QJsonObject returnValue;
+    returnValue.insert("error", QJsonValue(downloadList.at(idx).error));
+    returnValue.insert("file", QJsonValue(downloadList.at(idx).file));
+    returnValue.insert("path", QJsonValue(downloadList.at(idx).path));
+    returnValue.insert("progress", QJsonValue(downloadList.at(idx).progress));
+    returnValue.insert("size", QJsonValue(downloadList.at(idx).size));
+    returnValue.insert("status", QJsonValue(downloadList.at(idx).status));
+    returnValue.insert("url", QJsonValue(downloadList.at(idx).url));
+    return returnValue;
+}
+
+QString DownloadManager::getDownloadsFile() {
+    QString path = QApplication::applicationDirPath();
+    if(!path.endsWith("/"))
+        path += "/";
+    return tr("%1%2").arg(path).arg("downloads.json");
+}
+
+void DownloadManager::saveDownloads() {
+    // trying to open file with downloads for writing
+    QFile savedJsonDownloads(getDownloadsFile());
+    if(savedJsonDownloads.open(QIODevice::WriteOnly)) {
+        // generate json array
+        QJsonArray jsonDownloads;
+        for(int i=0; i<downloadList.length(); i++)
+            jsonDownloads.append(download2Json(i));
+        QJsonDocument jsonDoc(jsonDownloads);
+        savedJsonDownloads.write(jsonDoc.toJson());
+        savedJsonDownloads.close();
+    }
+}
+
+void DownloadManager::addDownloadFromJson(QJsonObject obj) {
+    DownloadInformation dwl;
+    dwl.error = obj.value("error").toString();
+    dwl.file = obj.value("file").toString();
+    dwl.path = obj.value("path").toString();
+    dwl.progress = obj.value("progress").toVariant().toLongLong();
+    dwl.size = obj.value("size").toVariant().toLongLong();
+    dwl.status = static_cast<DownloadStatus>(obj.value("status").toInt());
+    dwl.url = obj.value("url").toString();
+    if(dwl.status == StatInProgress)
+        dwl.status = StatAborted;
+    dwl.speed = 0;
+    dwl.timeoutCounter = 0;
+    dwl.timeoutProgress = 0;
+    dwl.downloader = new FWDownload();
+    downloadList.append(dwl);
+    emit newInformation(downloadList.length() - 1, InfoNewDownload);
+    checkDownloads();
+}
+
+void DownloadManager::loadDownloads() {
+    // trying to open file with downloads for reading
+    QFile savedJsonDownloads(getDownloadsFile());
+    if(savedJsonDownloads.open(QIODevice::ReadOnly)) {
+        // parse json data
+        QJsonDocument doc(QJsonDocument::fromJson(savedJsonDownloads.readAll()));
+        QJsonArray jsonDownloads = doc.array();
+        for(int i=0; i<jsonDownloads.size(); i++) {
+            addDownloadFromJson(jsonDownloads.at(i).toObject());
+        }
+        savedJsonDownloads.close();
+    }
 }
 
 } // end of namespace net

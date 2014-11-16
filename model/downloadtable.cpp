@@ -9,14 +9,31 @@ DownloadTable::DownloadTable(const net::DownloadManager *downloadManager, QObjec
     QAbstractTableModel(parent),
     downloadManager(downloadManager)
 {
-    // connect(downloadManager, SIGNAL(newInformation(int,net::InformationType)), this, SLOT(handleDownloadInformation(int,net::InformationType)));
+    connect(downloadManager, SIGNAL(newInformation(int,net::InformationType)), this, SLOT(handleDownloadInformation(int,net::InformationType)));
 }
 
 void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationType prop) {
-    (void)downloadIdx;
-    (void)prop;
-    // TODO cell-wise refresh
-    refreshAll();
+    if(prop == net::InfoNewDownload) {
+        beginInsertRows(QModelIndex(), downloadIdx, downloadIdx);
+        endInsertRows();
+    }else {
+        int firstCol = 0;
+        int lastCol = 0;
+        if(prop == net::InfoFilename) {
+            firstCol = 0;
+            lastCol = 0;
+        } else if(prop == net::InfoState) {
+            firstCol = 1;
+            lastCol = 1;
+        } else if(prop == net::InfoSize) {
+            firstCol = 2;
+            lastCol = 2;
+        } else if(prop == net::InfoSpeed) {
+            firstCol = 3;
+            lastCol = 5;
+        }
+        emit dataChanged(createIndex(downloadIdx, firstCol), createIndex(downloadIdx, lastCol));
+    }
 }
 
 void DownloadTable::refreshAll() {
@@ -143,6 +160,8 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
         return "File Offline";
     case net::StatLoginError:
         return "Wrong Login";
+    case net::StatAborted:
+        return "Download Aborted";
     }
     return "Unknown";
 }

@@ -21,10 +21,13 @@ class DownloadManager : public QObject {
 
 public:
     explicit DownloadManager(const int parallelDownloads, const int reloadSettings, const LoginData loginData, QObject *parent = 0);
+    ~DownloadManager();
     void addLink(const QString url, const QString path);
     int numberOfDownloads() const;
     int numberOfDownloads(const DownloadStatus status) const;
     DownloadInformation downloadAt(const int index) const;
+
+    // TODO: delete download
 
 signals:
     void newInformation(int downloadIdx, net::InformationType prop);
@@ -46,6 +49,11 @@ protected slots:
 protected:
     void startDownload(const DownloadInformation downloadInformation);
     bool shouldReload(const int i);
+    void saveDownloads();
+    void loadDownloads();
+    QString getDownloadsFile();
+    void addDownloadFromJson(QJsonObject obj);
+    QJsonObject download2Json(int idx);
 
 protected:
     QList<DownloadInformation> downloadList;

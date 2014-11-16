@@ -5,14 +5,16 @@ namespace fdp {
 namespace net {
 
 enum DownloadStatus {
-    StatPending,
-    StatInProgress,
-    StatFinished,
-    StatTimeout,
-    StatError,
-    StatFWError,
-    StatFileOffline,
-    StatLoginError
+    StatPending = 0,
+    StatInProgress = 1,
+    StatAborted = 2,
+    StatFinished = 3,
+
+    StatLoginError = -1,
+    StatTimeout = -2,
+    StatFWError = -3,
+    StatError = -4,
+    StatFileOffline = -5,
 };
 
 } // end of namespace net
