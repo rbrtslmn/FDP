@@ -62,21 +62,23 @@ MainWindow::~MainWindow() {
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
     QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
-    for(int i=0; i<selectedDownloads.length(); i++) {
+    if(selectedDownloads.length() > 0) {
         QMenu contextMenu;
         contextMenu.addAction("Stop");
         contextMenu.addAction("Restart");
         contextMenu.addAction("Delete");
         QAction* selectedItem = contextMenu.exec(globalPos);
         if(selectedItem) {
-            if(selectedItem->text() == "Stop")
-                downloadManager->stopDownload(selectedDownloads.at(i).row());
-            else if(selectedItem->text() == "Restart")
-                downloadManager->restartDownload(selectedDownloads.at(i).row());
-            else if(selectedItem->text() == "Delete") {
-                downloadTable->beginDelete(selectedDownloads.at(i).row());
-                downloadManager->deleteDownload(selectedDownloads.at(i).row());
-                downloadTable->endDelete();
+            for(int i=selectedDownloads.length() - 1; i >= 0; i--) {
+                if(selectedItem->text() == "Stop")
+                    downloadManager->stopDownload(selectedDownloads.at(i).row());
+                else if(selectedItem->text() == "Restart")
+                    downloadManager->restartDownload(selectedDownloads.at(i).row());
+                else if(selectedItem->text() == "Delete") {
+                    downloadTable->beginDelete(selectedDownloads.at(i).row());
+                    downloadManager->deleteDownload(selectedDownloads.at(i).row());
+                    downloadTable->endDelete();
+                }
             }
         }
     }
