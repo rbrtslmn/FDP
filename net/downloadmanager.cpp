@@ -57,7 +57,6 @@ void DownloadManager::addLink(const QString url, const QString path) {
     newDownload.downloader = new FWDownload();
     newDownload.timeoutCounter = 0;
     downloadList.append(newDownload);
-    emit newInformation(downloadList.length() - 1, InfoNewDownload);
     checkDownloads();
 }
 
@@ -248,33 +247,26 @@ void DownloadManager::saveDownloads() {
     }
 }
 
-void DownloadManager::stopSelection(const QModelIndexList &selection) {
-    for(int i=0; i<selection.length(); i++) {
-        downloadList[selection.at(i).row()].downloader->stop(true);
-        downloadList[selection.at(i).row()].status = StatAborted;
-    }
+void DownloadManager::stopDownload(int i) {
+    downloadList[i].downloader->stop(true);
+    downloadList[i].status = StatAborted;
     checkDownloads();
 }
 
-void DownloadManager::restartSelection(const QModelIndexList &selection) {
-    for(int i=0; i<selection.length(); i++) {
-        downloadList[selection.at(i).row()].downloader->stop(true);
-        downloadList[selection.at(i).row()].status = StatPending;
-        downloadList[selection.at(i).row()].error = "";
-        downloadList[selection.at(i).row()].progress = 0;
-        downloadList[selection.at(i).row()].timeoutCounter = 0;
-        downloadList[selection.at(i).row()].timeoutProgress = 0;
-    }
+void DownloadManager::restartDownload(int i) {
+    downloadList[i].downloader->stop(true);
+    downloadList[i].status = StatPending;
+    downloadList[i].error = "";
+    downloadList[i].progress = 0;
+    downloadList[i].timeoutCounter = 0;
+    downloadList[i].timeoutProgress = 0;
     checkDownloads();
 }
 
-void DownloadManager::deleteSelection(const QModelIndexList &selection) {
-    for(int i=selection.length() - 1; i>=0; i--) {
-        downloadList[selection.at(i).row()].downloader->stop(false);
-        delete downloadList[selection.at(i).row()].downloader;
-        downloadList.removeAt(selection.at(i).row());
-        emit newInformation(selection.at(i).row(), InfoDownloadDeleted);
-    }
+void DownloadManager::deleteDownload(int i) {
+    downloadList[i].downloader->stop(false);
+    delete downloadList[i].downloader;
+    downloadList.removeAt(i);
 }
 
 void DownloadManager::addDownloadFromJson(QJsonObject obj) {
@@ -293,7 +285,6 @@ void DownloadManager::addDownloadFromJson(QJsonObject obj) {
     dwl.timeoutProgress = 0;
     dwl.downloader = new FWDownload();
     downloadList.append(dwl);
-    emit newInformation(downloadList.length() - 1, InfoNewDownload);
     checkDownloads();
 }
 

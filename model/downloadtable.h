@@ -24,9 +24,13 @@ public:
     static QString B2String(float Bps);
     static QString DownloadStatus2String(net::DownloadStatus status);
 
+    void beginInsert(int i);
+    void endInsert();
+    void beginDelete(int i);
+    void endDelete();
+
 protected slots:
     void handleDownloadInformation(int downloadIdx, net::InformationType prop);
-    void refreshAll();
 
 protected:
     const net::DownloadManager *downloadManager;

@@ -13,36 +13,38 @@ DownloadTable::DownloadTable(const net::DownloadManager *downloadManager, QObjec
 }
 
 void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationType prop) {
-    if(prop == net::InfoNewDownload) {
-        beginInsertRows(QModelIndex(), downloadIdx, downloadIdx);
-        endInsertRows();
-    }else if(prop == net::InfoNewDownload) {
-        // why does this results in empty rows?
-        beginRemoveRows(QModelIndex(), downloadIdx, downloadIdx);
-        endRemoveRows();
-    } else {
-        int firstCol = 0;
-        int lastCol = 0;
-        if(prop == net::InfoFilename) {
-            firstCol = 0;
-            lastCol = 0;
-        } else if(prop == net::InfoState) {
-            firstCol = 1;
-            lastCol = 1;
-        } else if(prop == net::InfoSize) {
-            firstCol = 2;
-            lastCol = 2;
-        } else if(prop == net::InfoSpeed) {
-            firstCol = 3;
-            lastCol = 5;
-        }
-        emit dataChanged(createIndex(downloadIdx, firstCol), createIndex(downloadIdx, lastCol));
-    }
+    int firstCol = 0;
+    int lastCol = 0;
+    if(prop == net::InfoFilename) {
+        firstCol = 0;
+        lastCol = 0;
+    } else if(prop == net::InfoState) {
+        firstCol = 1;
+        lastCol = 1;
+    } else if(prop == net::InfoSize) {
+        firstCol = 2;
+        lastCol = 2;
+    } else if(prop == net::InfoSpeed) {
+        firstCol = 3;
+        lastCol = 5;
+    } else return;
+    emit dataChanged(createIndex(downloadIdx, firstCol), createIndex(downloadIdx, lastCol));
 }
 
-void DownloadTable::refreshAll() {
-    beginResetModel();
-    endResetModel();
+void DownloadTable::beginInsert(int i) {
+    beginInsertRows(QModelIndex(), i, i);
+}
+
+void DownloadTable::endInsert() {
+    endInsertRows();
+}
+
+void DownloadTable::beginDelete(int i) {
+    beginRemoveRows(QModelIndex(), i, i);
+}
+
+void DownloadTable::endDelete() {
+    endRemoveRows();
 }
 
 int DownloadTable::rowCount(const QModelIndex &parent) const {

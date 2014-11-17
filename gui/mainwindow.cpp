@@ -62,7 +62,7 @@ MainWindow::~MainWindow() {
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
     QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
-    if(selectedDownloads.length() > 0) {
+    for(int i=0; i<selectedDownloads.length(); i++) {
         QMenu contextMenu;
         contextMenu.addAction("Stop");
         contextMenu.addAction("Restart");
@@ -70,11 +70,14 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         QAction* selectedItem = contextMenu.exec(globalPos);
         if(selectedItem) {
             if(selectedItem->text() == "Stop")
-                downloadManager->stopSelection(selectedDownloads);
+                downloadManager->stopDownload(selectedDownloads.at(i).row());
             else if(selectedItem->text() == "Restart")
-                downloadManager->restartSelection(selectedDownloads);
-            else if(selectedItem->text() == "Delete")
-                downloadManager->deleteSelection(selectedDownloads);
+                downloadManager->restartDownload(selectedDownloads.at(i).row());
+            else if(selectedItem->text() == "Delete") {
+                downloadTable->beginDelete(selectedDownloads.at(i).row());
+                downloadManager->deleteDownload(selectedDownloads.at(i).row());
+                downloadTable->endDelete();
+            }
         }
     }
 }
@@ -124,8 +127,11 @@ void MainWindow::addDownloads() {
         QStringList list = ui->plainTextEdit->toPlainText().split("\n");
         for(int i=0; i<list.length(); i++) {
             QString url = list.at(i).trimmed();
-            if(!url.isEmpty())
+            if(!url.isEmpty()) {
+                downloadTable->beginInsert(downloadManager->numberOfDownloads() - 1);
                 downloadManager->addLink(url, ui->lineEdit_3->text());
+                downloadTable->endInsert();
+            }
         }
         ui->plainTextEdit->clear();
         ui->tabWidget->setCurrentIndex(1);

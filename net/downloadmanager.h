@@ -27,9 +27,10 @@ public:
     int numberOfDownloads() const;
     int numberOfDownloads(const DownloadStatus status) const;
     DownloadInformation downloadAt(const int index) const;
-    void stopSelection(const QModelIndexList &selection);
-    void restartSelection(const QModelIndexList &selection);
-    void deleteSelection(const QModelIndexList &selection);
+
+    void stopDownload(int i);
+    void restartDownload(int i);
+    void deleteDownload(int i);
 
 signals:
     void newInformation(int downloadIdx, net::InformationType prop);
