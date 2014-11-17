@@ -217,7 +217,10 @@ int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
 
 DownloadManager::~DownloadManager() {
     saveDownloads();
-    // TODO release memory
+    for(int i=0; i<downloadList.length(); i++) {
+        downloadList[i].downloader->stop(false);
+        delete downloadList[i].downloader;
+    }
 }
 
 QJsonObject DownloadManager::download2Json(int idx) {
