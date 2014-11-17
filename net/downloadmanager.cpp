@@ -37,7 +37,6 @@ void DownloadManager::check4Timeout() {
             } else if(++downloadList[i].timeoutCounter >= 30) { // TODO: add this to the download settings
                 downloadList[i].downloader->stop(true);
                 downloadList[i].status = StatTimeout;
-                emit newInformation(i, InfoState);
                 checkDownloads();
             }
         }
@@ -127,7 +126,6 @@ void DownloadManager::handleDownloadError(QString msg) {
             downloadList[i].error = msg;
             downloadList[i].speed = 0;
             downloadList[i].status = StatError;
-            emit newInformation(i, InfoState);
             break;
         }
     }
@@ -153,7 +151,6 @@ void DownloadManager::handleDownloadFinished() {
                         downloadList[i].status = StatLoginError;
                 }
             }
-            emit newInformation(i, InfoState);
             break;
         }
     }
@@ -164,11 +161,8 @@ void DownloadManager::handleDownloadProgress(qint64 curr, qint64 size) {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].progress = curr;
-            if(downloadList[i].size != size) {
+            if(downloadList[i].size != size)
                 downloadList[i].size = size;
-                emit newInformation(i, InfoSize);
-            }
-            emit newInformation(i, InfoProgress);
             break;
         }
     }
@@ -178,7 +172,6 @@ void DownloadManager::handleDownloadSpeed(float Bps) {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].speed = Bps;
-            emit newInformation(i, InfoSpeed);
             break;
         }
     }
@@ -188,7 +181,6 @@ void DownloadManager::handleDownloadFilename(QString filename) {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].file = filename;
-            emit newInformation(i, InfoFilename);
             break;
         }
     }
@@ -198,7 +190,6 @@ void DownloadManager::handleDownloadSize(qint64 size) {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].size = size;
-            emit newInformation(i, InfoSize);
             break;
         }
     }

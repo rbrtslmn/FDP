@@ -14,23 +14,22 @@ TEMPLATE = app
 SOURCES += \
     main.cpp\
     gui/mainwindow.cpp \
-    net/httpdaemon.cpp \
-    crypt/aesdecoder.cpp \
-    net/fwdownload.cpp \
     model/downloadtable.cpp \
-    net/downloadmanager.cpp \
-    net/linkgenerator.cpp
+    crypt/aesdecoder.cpp \
+    net/httpdaemon.cpp \
+    net/linkgenerator.cpp \
+    net/fwdownload.cpp \
+    net/downloadmanager.cpp
 
 HEADERS  += \
     gui/mainwindow.h \
-    net/httpdaemon.h \
-    crypt/aesdecoder.h \
-    net/fwdownload.h \
-    model/downloadtable.h \
-    net/downloadmanager.h \
-    net/linkgenerator.h \
     gui/reloadsettings.h \
-    net/informationtype.h \
+    model/downloadtable.h \
+    crypt/aesdecoder.h \
+    net/httpdaemon.h \
+    net/linkgenerator.h \
+    net/fwdownload.h \
+    net/downloadmanager.h \
     net/downloadstatus.h \
     net/downloadinformation.h \
     net/logindata.h
@@ -42,4 +41,10 @@ LIBS += -lmcrypt
 
 RESOURCES += \
     res/images.qrc
+
+win32 {
+    INCLUDEPATH += ../Libraries/libmcrypt/include
+    LIBS += -L../Libraries/libmcrypt/lib
+    RC_FILE = res/icon.rc
+}
 

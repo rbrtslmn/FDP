@@ -8,7 +8,6 @@
 
 #include "fwdownload.h"
 
-#include "informationtype.h"
 #include "downloadstatus.h"
 #include "downloadinformation.h"
 #include "logindata.h"
@@ -31,9 +30,6 @@ public:
     void stopDownload(int i);
     void restartDownload(int i);
     void deleteDownload(int i);
-
-signals:
-    void newInformation(int downloadIdx, net::InformationType prop);
 
 public slots:
     void setParallelDownloads(int parallelDownloads);

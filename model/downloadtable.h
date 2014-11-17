@@ -29,9 +29,6 @@ public:
     void beginDelete(int i);
     void endDelete();
 
-protected slots:
-    void handleDownloadInformation(int downloadIdx, net::InformationType prop);
-
 protected:
     const net::DownloadManager *downloadManager;
 

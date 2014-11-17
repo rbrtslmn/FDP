@@ -8,28 +8,7 @@ namespace model {
 DownloadTable::DownloadTable(const net::DownloadManager *downloadManager, QObject *parent) :
     QAbstractTableModel(parent),
     downloadManager(downloadManager)
-{
-    connect(downloadManager, SIGNAL(newInformation(int,net::InformationType)), this, SLOT(handleDownloadInformation(int,net::InformationType)));
-}
-
-void DownloadTable::handleDownloadInformation(int downloadIdx, net::InformationType prop) {
-    int firstCol = 0;
-    int lastCol = 0;
-    if(prop == net::InfoFilename) {
-        firstCol = 0;
-        lastCol = 0;
-    } else if(prop == net::InfoState) {
-        firstCol = 1;
-        lastCol = 1;
-    } else if(prop == net::InfoSize) {
-        firstCol = 2;
-        lastCol = 2;
-    } else if(prop == net::InfoSpeed) {
-        firstCol = 3;
-        lastCol = 5;
-    } else return;
-    emit dataChanged(createIndex(downloadIdx, firstCol), createIndex(downloadIdx, lastCol));
-}
+{ }
 
 void DownloadTable::beginInsert(int i) {
     beginInsertRows(QModelIndex(), i, i);

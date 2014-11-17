@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
+    setWindowIcon(QIcon(":/symbols/icon.png"));
     loadSettings();
 
     net::LoginData loginData;
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     timer.start(1000);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
+    connect(&timer, SIGNAL(timeout()), ui->tableView->viewport(), SLOT(update()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleContextMenuRequest(QPoint)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
