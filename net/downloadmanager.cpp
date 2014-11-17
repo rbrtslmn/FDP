@@ -298,7 +298,6 @@ void DownloadManager::addDownloadFromJson(QJsonObject obj) {
     dwl.timeoutProgress = 0;
     dwl.downloader = new FWDownload();
     downloadList.append(dwl);
-    checkDownloads();
 }
 
 void DownloadManager::loadDownloads() {
@@ -307,11 +306,12 @@ void DownloadManager::loadDownloads() {
     if(savedJsonDownloads.open(QIODevice::ReadOnly)) {
         // parse json data
         QJsonDocument doc(QJsonDocument::fromJson(savedJsonDownloads.readAll()));
+        savedJsonDownloads.close();
         QJsonArray jsonDownloads = doc.array();
         for(int i=0; i<jsonDownloads.size(); i++) {
             addDownloadFromJson(jsonDownloads.at(i).toObject());
         }
-        savedJsonDownloads.close();
+        checkDownloads();
     }
 }
 
