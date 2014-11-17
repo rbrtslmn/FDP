@@ -47,6 +47,7 @@ protected slots:
     void handleDownloadFinished();
     void handleDownloadError(QString msg);
     void handleDownloadFilename(QString filename);
+    void handleDownloadSize(qint64 size);
     void check4Timeout();
 
 protected:

@@ -25,6 +25,7 @@ signals:
     void finished();
     void error(QString message);
     void receivedFilename(QString filename);
+    void receivedSize(qint64 size);
 
 protected slots:
     void handleProgress(qint64 curr, qint64 size);
@@ -35,6 +36,9 @@ protected slots:
 protected:
     void stopDownload();
     bool openFile();
+    QString headerFilename();
+    QString alternativeFilename();
+    qint64 headerSize();
 
 protected:
     QString path;

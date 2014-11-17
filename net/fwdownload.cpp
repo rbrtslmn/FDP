@@ -1,6 +1,7 @@
 #include "fwdownload.h"
 
 #include <QNetworkReply>
+#include <QFileInfo>
 
 namespace fdp {
 namespace net {
@@ -39,9 +40,14 @@ void FWDownload::start(const QString url, const QString path) {
 void FWDownload::handleData() {
     // open file
     if(!output.isOpen()) {
+        // error while opening
         if(!openFile()) {
             stopDownload();
             return;
+        // emit filename and size
+        } else {
+            emit receivedFilename(QFileInfo(output).fileName());
+            emit receivedSize(headerSize());
         }
     }
     // write to file
@@ -96,23 +102,35 @@ void FWDownload::handleError() {
     stop(false);
 }
 
+QString FWDownload::headerFilename() {
+    QString returnValue = download->rawHeader("Content-Disposition");
+    int idx = returnValue.indexOf(QRegExp("filename=\".*\""));
+    if(idx != -1)
+        returnValue = returnValue.mid(idx).split("\"")[1];
+    return returnValue;
+}
+
+QString FWDownload::alternativeFilename() {
+    int idx = 0;
+    while(QFile(tr("%1unnamed-%2").arg(path).arg(idx)).exists())
+        idx++;
+    return tr("unnamed-%1").arg(idx);
+}
+
+qint64 FWDownload::headerSize() {
+    QString sizeString = download->rawHeader("Content-Length");
+    return sizeString.toLongLong();
+}
+
 bool FWDownload::openFile() {
-    // parse filename
-    QString remoteFile = download->rawHeader("Content-Disposition");
-    int idx = remoteFile.indexOf(QRegExp("filename=\".*\""));
-    if(idx != -1) {
-        remoteFile = remoteFile.mid(idx).split("\"")[1];
-    } else {
-        int idx = 0;
-        while(QFile(tr("%1unnamed-%2").arg(path).arg(idx)).exists())
-            idx++;
-        remoteFile = tr("unnamed-%1").arg(idx);
-    }
-    emit receivedFilename(remoteFile);
+    // get filename
+    QString filename = headerFilename();
+    if(filename.isEmpty())
+        filename = alternativeFilename();
     // try to open it
-    output.setFileName(tr("%1%2").arg(path).arg(remoteFile));
+    output.setFileName(tr("%1%2").arg(path).arg(filename));
     if (!output.open(QIODevice::WriteOnly)) {
-        emit error(tr("couln't open \"%1%2\" for writing").arg(path).arg(remoteFile));
+        emit error(tr("couln't open \"%1%2\" for writing").arg(path).arg(filename));
         return false;
     } else return true;
 }

@@ -113,6 +113,7 @@ void DownloadManager::startDownload(const DownloadInformation downloadInformatio
     connect(downloadInformation.downloader, SIGNAL(error(QString)), this, SLOT(handleDownloadError(QString)));
     connect(downloadInformation.downloader, SIGNAL(finished()), this, SLOT(handleDownloadFinished()));
     connect(downloadInformation.downloader, SIGNAL(receivedFilename(QString)), this, SLOT(handleDownloadFilename(QString)));
+    connect(downloadInformation.downloader, SIGNAL(receivedSize(qint64)), this, SLOT(handleDownloadSize(qint64)));
     downloadInformation.downloader->start(
         LinkGenerator::GenerateFWLink(loginData.username, loginData.password, downloadInformation.url),
         downloadInformation.path);
@@ -163,9 +164,11 @@ void DownloadManager::handleDownloadProgress(qint64 curr, qint64 size) {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].progress = curr;
-            downloadList[i].size = size;
+            if(downloadList[i].size != size) {
+                downloadList[i].size = size;
+                emit newInformation(i, InfoSize);
+            }
             emit newInformation(i, InfoProgress);
-            emit newInformation(i, InfoSize);
             break;
         }
     }
@@ -186,6 +189,16 @@ void DownloadManager::handleDownloadFilename(QString filename) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].file = filename;
             emit newInformation(i, InfoFilename);
+            break;
+        }
+    }
+}
+
+void DownloadManager::handleDownloadSize(qint64 size) {
+    for(int i=0; i<downloadList.length(); i++) {
+        if(downloadList[i].downloader == sender()) {
+            downloadList[i].size = size;
+            emit newInformation(i, InfoSize);
             break;
         }
     }
