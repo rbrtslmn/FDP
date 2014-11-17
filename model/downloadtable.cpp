@@ -99,6 +99,7 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         || downloadManager->downloadAt(index.row()).status == net::StatFWError
         || downloadManager->downloadAt(index.row()).status == net::StatFileOffline
         || downloadManager->downloadAt(index.row()).status == net::StatLoginError
+        || downloadManager->downloadAt(index.row()).status == net::StatInvalidUrl
         || downloadManager->downloadAt(index.row()).status == net::StatTimeout)
             return QVariant(QColor(255, 100, 100));
         /*
@@ -147,6 +148,8 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
         return "Wrong Login";
     case net::StatAborted:
         return "Download Aborted";
+    case net::StatInvalidUrl:
+        return "Invalid URL";
     }
     return "Unknown";
 }

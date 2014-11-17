@@ -147,8 +147,10 @@ void DownloadManager::handleDownloadFinished() {
                     file.close();
                     if(content.contains("File offline."))
                         downloadList[i].status = StatFileOffline;
-                    if(content.contains("Ung&uuml;ltiger Login"))
+                    else if(content.contains("Ung&uuml;ltiger Login"))
                         downloadList[i].status = StatLoginError;
+                    else if(content.contains("Ung&uuml;tiger Hoster"))
+                        downloadList[i].status = StatInvalidUrl;
                 }
             }
             break;
