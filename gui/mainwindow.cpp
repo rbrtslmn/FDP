@@ -132,7 +132,7 @@ void MainWindow::addDownloads() {
         for(int i=0; i<list.length(); i++) {
             QString url = list.at(i).trimmed();
             if(!url.isEmpty()) {
-                downloadTable->beginInsert(downloadManager->numberOfDownloads() - 1);
+                downloadTable->beginInsert(downloadManager->numberOfDownloads());
                 downloadManager->addLink(url, ui->lineEdit_3->text());
                 downloadTable->endInsert();
             }
