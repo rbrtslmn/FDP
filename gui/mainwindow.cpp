@@ -35,7 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->verticalHeader()->setHidden(true);
 
-    daemon->listen();
+    if(!daemon->listen())
+        QMessageBox::warning(this, "Socket Error",
+            "Couldn't set up CNL socket (only manual link adding supported). "
+            "This can be caused by running multiple instances of this application.");
     timer.start(1000);
 
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
