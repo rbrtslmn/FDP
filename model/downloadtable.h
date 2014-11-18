@@ -14,7 +14,7 @@ class DownloadTable : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    explicit DownloadTable(const net::DownloadManager *downloadManager, QObject *parent = 0);
+    explicit DownloadTable(const net::DownloadManager *downloadManager, int progressColumnWidth = 0, QObject *parent = 0);
     virtual int rowCount(const QModelIndex &parent) const;
     virtual int columnCount(const QModelIndex &parent) const;
     virtual QVariant data(const QModelIndex &index, int role) const;
@@ -29,8 +29,12 @@ public:
     void beginDelete(int i);
     void endDelete();
 
+public slots:
+    void setProgressColumnWidth(int progressColumnWidth);
+
 protected:
     const net::DownloadManager *downloadManager;
+    int progressColumnWidth;
 
 };
 

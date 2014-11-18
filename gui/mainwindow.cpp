@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // set up download table
     downloadTable = new model::DownloadTable(downloadManager);
     ui->tableView->setModel(downloadTable);
+    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(handleSectionResize(int,int,int)));
     loadColumnSizes();
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -65,6 +66,12 @@ MainWindow::~MainWindow() {
     delete downloadManager;
     delete daemon;
     delete ui;
+}
+
+void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
+    (void)oldWidth;
+    if(idx == 3)
+        downloadTable->setProgressColumnWidth(newWidth);
 }
 
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
@@ -205,10 +212,8 @@ void MainWindow::loadColumnSizes() {
     // table column size
     for(int i=0; i<8; i++) {
         int width = settings.value(tr("column-width-%1").arg(i)).toInt();
-        if(width > 0) {
-            qDebug() << width;
+        if(width > 0)
             ui->tableView->horizontalHeader()->resizeSection(i, width);
-        }
     }
 }
 

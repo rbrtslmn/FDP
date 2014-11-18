@@ -34,6 +34,7 @@ protected slots:
     void updateReloadSettings();
     void handleLoginData();
     void handleContextMenuRequest(const QPoint &pos);
+    void handleSectionResize(int idx, int oldWidth, int newWidth);
 
 protected:
     void saveSettings();
