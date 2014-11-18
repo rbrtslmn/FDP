@@ -1,39 +1,53 @@
 #include "aesdecoder.h"
 
-#include <stdio.h>
 #include <mcrypt.h>
-
-#include <QDebug>
 
 namespace fdp {
 namespace crypt {
 
-int AESDecoder::Decode(void* buffer, int buffer_len, char* IV, char* key, int key_len) {
-    MCRYPT td = mcrypt_module_open("rijndael-128", NULL, "cbc", NULL);
-    int blocksize = mcrypt_enc_get_block_size(td);
-    if(buffer_len%blocksize != 0)
-      return 1;
-    mcrypt_generic_init(td, key, key_len, IV);
-    mdecrypt_generic(td, buffer, buffer_len);
-    mcrypt_generic_deinit (td);
-    mcrypt_module_close(td);
-    return 0;
-}
-
-bool AESDecoder::Decode(QByteArray crypted, QByteArray key, QByteArray &plain) {
+bool AESDecoder::DecodeCNL(const QByteArray crypted, const QByteArray key, QByteArray &plain) {
     char buffer[crypted.length()];
-    char iv[key.length()];
     for(int i=0; i<crypted.length(); i++)
         buffer[i] = crypted[i];
-    for(int i=0; i<key.length(); i++)
-        iv[i] = key[i];
-    int retVal = Decode(buffer, crypted.length(), iv, iv, key.length());
-    if(!retVal) {
+    bool returnValue = AES128CBC(buffer, crypted.length(), key.data(), key.length(), key.data(), key.length());
+    if(returnValue)
         plain = QByteArray(buffer, crypted.length());
-        return true;
-    }
-    return false;
+    return returnValue;
 }
+
+bool AESDecoder::AES128CBC(char *buffer, const int bufferLength, const char *key, const int keyLength, const char *iv, const int ivLength) {
+    // open mcrypt module
+    MCRYPT td = mcrypt_module_open((char *)"rijndael-128", NULL, (char *)"cbc", NULL);
+    if(td == MCRYPT_FAILED)
+        return false;
+    // check cipher size
+    int blocksize = mcrypt_enc_get_block_size(td);
+    if(bufferLength % blocksize)
+        return false;
+    // prepare key
+    char *sizedKey = new char[keyLength];
+    for(int i=0; i<keyLength; i++)
+        sizedKey[i] = key[i];
+    // prepare iv
+    char *sizedIv = new char[mcrypt_enc_get_iv_size(td)];
+    for(int i=0; i<mcrypt_enc_get_iv_size(td); i++) {
+        if(i<ivLength)
+            sizedIv[i] = iv[i];
+        else
+            sizedIv[i] = 0;
+    }
+    // decrypt
+    mcrypt_generic_init(td, sizedKey, keyLength, sizedIv);
+    mdecrypt_generic(td, buffer, bufferLength);
+    mcrypt_generic_deinit (td);
+    // close module
+    mcrypt_module_close(td);
+    delete sizedKey;
+    delete sizedIv;
+    return true;
+}
+
+
 
 } // end of namespace crypt
 } // end of namespace fdp

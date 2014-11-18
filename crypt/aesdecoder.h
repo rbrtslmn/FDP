@@ -9,8 +9,8 @@ namespace crypt {
 class AESDecoder {
 
 public:
-    static int Decode(void* buffer, int buffer_len, char* IV, char* key, int key_len);
-    static bool Decode(QByteArray crypted, QByteArray key, QByteArray &plain);
+    static bool DecodeCNL(const QByteArray crypted, const QByteArray key, QByteArray &plain);
+    static bool AES128CBC(char* buffer, const int bufferLength, const char *key, const int keyLength, const char* iv, const int ivLength);
 
 };
 

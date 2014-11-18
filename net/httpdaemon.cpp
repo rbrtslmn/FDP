@@ -14,22 +14,30 @@ HTTPDaemon::HTTPDaemon() :
     tcpServer(new QTcpServer()),
     port(9666)
 {
-    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleNewConnection()));
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnect()));
+}
+
+HTTPDaemon::~HTTPDaemon() {
+    stop();
+    delete tcpServer;
 }
 
 bool HTTPDaemon::listen() {
-    return tcpServer->listen(QHostAddress::Any, port);
+    if(!tcpServer->isListening())
+        return tcpServer->listen(QHostAddress::Any, port);
+    else return false;
 }
 
 void HTTPDaemon::stop() {
-    tcpServer->close();
+    if(tcpServer->isListening())
+        tcpServer->close();
 }
 
-void HTTPDaemon::handleNewConnection() {
+void HTTPDaemon::handleConnect() {
     while(tcpServer->hasPendingConnections()) {
         QTcpSocket *client = tcpServer->nextPendingConnection();
         connect(client, SIGNAL(readyRead()), this, SLOT(handleConnectionData()));
-        connect(client, SIGNAL(destroyed()), this, SLOT(handleConnectionDestoyed()));
+        connect(client, SIGNAL(disconnected()), this, SLOT(handleDisconnect()));
     }
 }
 
@@ -41,15 +49,51 @@ QString HTTPDaemon::generateHTTPResponse(const QString text) {
     return returnValue;
 }
 
+qint64 HTTPDaemon::parseLength(QString data) {
+    int idx = data.indexOf("Content-Length:");
+    if(idx != -1) {
+        QRegExp lengthRegExp("[0-9]+");
+        if(lengthRegExp.indexIn(data, idx) != -1)
+            return lengthRegExp.capturedTexts().at(0).toLongLong();
+    }
+    return -1;
+}
+
+int HTTPDaemon::knownClient(QTcpSocket *client) {
+    for(int i=0; i<requests.size(); i++) {
+        if(client == requests[i].client)
+            return i;
+    }
+    return -1;
+}
+
 void HTTPDaemon::handleConnectionData() {
     QTcpSocket *client = qobject_cast<QTcpSocket *>(sender());
-    if(client) {
-        QString request = "";
-        while(client->bytesAvailable()) {
-            request += client->readAll();
+    if(client && client->bytesAvailable()) {
+        int idx = knownClient(client);
+        // first data from client
+        if(idx == -1) {
+            HTTPRequest request;
+            request.client = client;
+            request.data = client->readAll();
+            request.length = parseLength(request.data);
+            requests.append(request);
+            idx = requests.length() - 1;
+        // second or later received data
+        } else {
+            requests[idx].data += client->readAll();
         }
-        handleRequest(request, client);
-        client->close();
+        int headerEnd = requests[idx].data.indexOf("\r\n\r\n");
+        if(headerEnd == -1 // invalid header block
+        || requests[idx].length == -1 // no content length header
+        || requests[idx].data.mid(headerEnd + 4).length() >= requests[idx].length) { // received all wanted bytes
+            // handle data
+            handleRequest(requests[idx].data, client);
+            client->flush();
+            client->close();
+            client->deleteLater();
+            requests.removeAt(idx);
+        }
     }
 }
 
@@ -83,17 +127,10 @@ bool HTTPDaemon::parseEncryptedLinks(const QString data) {
     parsePostValue(data, "crypted", crypted)) {
         QScriptEngine scriptEngine;
         QScriptValue jse = scriptEngine.evaluate(jk + ";f();");
-
-        qDebug() << jk;
-        qDebug() << jse.toString();
-
         QByteArray cipher = QByteArray::fromBase64(crypted.toLatin1());
         QByteArray key =    QByteArray::fromHex(jse.toString().toLatin1());
         QByteArray ba;
-        bool returnValue = crypt::AESDecoder::Decode(cipher, key, ba);
-
-        qDebug() << "return: " << returnValue;
-
+        bool returnValue = crypt::AESDecoder::DecodeCNL(cipher, key, ba);
         if(returnValue)
             emit receivedLinks(QString(ba));
         return returnValue;
@@ -127,10 +164,10 @@ bool HTTPDaemon::parsePlainLinks(const QString data) {
     return false;
 }
 
-void HTTPDaemon::handleConnectionDestoyed() {
+void HTTPDaemon::handleDisconnect() {
     QTcpSocket *client = qobject_cast<QTcpSocket *>(sender());
     if(client)
-        client->disconnect();
+        client->deleteLater();
 }
 
 } // end of namespace net

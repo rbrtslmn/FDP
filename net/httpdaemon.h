@@ -6,12 +6,19 @@
 namespace fdp {
 namespace net {
 
+struct HTTPRequest {
+    qint64 length;
+    QString data;
+    QTcpSocket *client;
+};
+
 class HTTPDaemon : public QObject {
 
     Q_OBJECT
 
 public:
     HTTPDaemon();
+    ~HTTPDaemon();
 
 public:
     bool listen();
@@ -23,8 +30,8 @@ signals:
     void receivedLinks(QString links);
 
 protected slots:
-    void handleNewConnection();
-    void handleConnectionDestoyed();
+    void handleConnect();
+    void handleDisconnect();
     void handleConnectionData();
 
 protected: // methods
@@ -32,10 +39,13 @@ protected: // methods
     bool parsePlainLinks(const QString data);
     bool parsePostValue(const QString data, const QString name, QString &value);
     void handleRequest(const QString request, QTcpSocket *client);
+    qint64 parseLength(QString data);
+    int knownClient(QTcpSocket *client);
 
 protected: // objects
     QTcpServer *tcpServer;
     quint16 port;
+    QList<HTTPRequest> requests;
 
 };
 
