@@ -17,30 +17,32 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     daemon(new net::HTTPDaemon())
 {
+    // set up ui
     ui->setupUi(this);
     setWindowTitle("Free-Way.me Download Program");
     setWindowIcon(QIcon(":/symbols/icon.png"));
     loadSettings();
-
+    // set up download manager
     net::LoginData loginData;
     loginData.username = ui->lineEdit->text();
     loginData.password = ui->lineEdit_2->text();
     downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings(), loginData);
+    // set up download table
     downloadTable = new model::DownloadTable(downloadManager);
-
-    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->setModel(downloadTable);
+    loadColumnSizes();
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setWordWrap(false);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->verticalHeader()->setHidden(true);
-
+    // set up http daemon
     if(!daemon->listen())
         QMessageBox::warning(this, "Socket Error",
             "Couldn't set up CNL socket (only manual link adding supported). "
             "This can be caused by running multiple instances of this application.");
     timer.start(1000);
-
+    // set up connections
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
     connect(&timer, SIGNAL(timeout()), ui->tableView->viewport(), SLOT(update()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
@@ -176,6 +178,9 @@ void MainWindow::saveSettings() {
     // window size
     settings.setValue("width", width());
     settings.setValue("height", height());
+    // table column size
+    for(int i=0; i<8; i++)
+        settings.setValue(tr("column-width-%1").arg(i), ui->tableView->horizontalHeader()->sectionSize(i));
 }
 
 void MainWindow::loadSettings() {
@@ -186,13 +191,25 @@ void MainWindow::loadSettings() {
     ui->checkBox->setChecked(settings.value("savepass").toBool());
     // download settings
     ui->lineEdit_3->setText(settings.value("path").toString());
-    ui->spinBox->setValue(settings.value("parallel").toInt());
+    ui->spinBox->setValue(settings.value("parallel", QVariant(2)).toInt());
     ui->checkBox_2->setChecked(settings.value("reload-fwerror").toBool());
     ui->checkBox_3->setChecked(settings.value("reload-timeout").toBool());
     ui->checkBox_4->setChecked(settings.value("reload-neterror").toBool());
-    ui->comboBox->setCurrentIndex(settings.value("reloadorder").toInt());
+    ui->comboBox->setCurrentIndex(settings.value("reloadorder", QVariant(1)).toInt());
     // window size
     resize(settings.value("width").toInt(), settings.value("height").toInt());
+}
+
+void MainWindow::loadColumnSizes() {
+    QSettings settings("Codingspezis", "FDP");
+    // table column size
+    for(int i=0; i<8; i++) {
+        int width = settings.value(tr("column-width-%1").arg(i)).toInt();
+        if(width > 0) {
+            qDebug() << width;
+            ui->tableView->horizontalHeader()->resizeSection(i, width);
+        }
+    }
 }
 
 } // end of namespace gui

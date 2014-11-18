@@ -38,6 +38,7 @@ protected slots:
 protected:
     void saveSettings();
     void loadSettings();
+    void loadColumnSizes();
     int getReloadSettings();
 
 protected:
