@@ -75,7 +75,7 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         if(selectedItem) {
             QStringList locations;
             for(int i=selectedDownloads.length() - 1; i >= 0; i--) {
-                if(selectedItem->text() == "Open Folder") {
+                if(selectedItem->text() == "Open Directory") {
                     QString path = downloadManager->downloadAt(selectedDownloads.at(i).row()).path;
                     if(!locations.contains(path)) {
                         locations.append(path);
