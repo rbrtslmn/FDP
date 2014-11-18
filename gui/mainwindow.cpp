@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->setModel(downloadTable);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableView->setWordWrap(false);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->verticalHeader()->setHidden(true);
 
