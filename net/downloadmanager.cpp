@@ -257,13 +257,13 @@ void DownloadManager::saveDownloads() {
 }
 
 void DownloadManager::stopDownload(int i) {
-    downloadList[i].downloader->stop(true);
+    downloadList[i].downloader->stop(false);
     downloadList[i].status = StatAborted;
     checkDownloads();
 }
 
 void DownloadManager::restartDownload(int i) {
-    downloadList[i].downloader->stop(true);
+    downloadList[i].downloader->stop(false);
     downloadList[i].status = StatPending;
     downloadList[i].error = "";
     downloadList[i].progress = 0;
