@@ -2,6 +2,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QMenu>
+#include <QDesktopServices>
 
 #include <net/fwdownload.h>
 
@@ -66,13 +67,21 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
     if(selectedDownloads.length() > 0) {
         QMenu contextMenu;
-        contextMenu.addAction("Stop");
-        contextMenu.addAction("Restart");
-        contextMenu.addAction("Delete");
+        contextMenu.addAction(QIcon(":/symbols/folder-g.png"), "Open Directory");
+        contextMenu.addAction(QIcon(":/symbols/stop-g.png"), "Stop");
+        contextMenu.addAction(QIcon(":/symbols/restart-g.png"), "Restart");
+        contextMenu.addAction(QIcon(":/symbols/delete-g.png"), "Delete");
         QAction* selectedItem = contextMenu.exec(globalPos);
         if(selectedItem) {
+            QStringList locations;
             for(int i=selectedDownloads.length() - 1; i >= 0; i--) {
-                if(selectedItem->text() == "Stop")
+                if(selectedItem->text() == "Open Folder") {
+                    QString path = downloadManager->downloadAt(selectedDownloads.at(i).row()).path;
+                    if(!locations.contains(path)) {
+                        locations.append(path);
+                        QDesktopServices::openUrl(path);
+                    }
+                 } else if(selectedItem->text() == "Stop")
                     downloadManager->stopDownload(selectedDownloads.at(i).row());
                 else if(selectedItem->text() == "Restart")
                     downloadManager->restartDownload(selectedDownloads.at(i).row());

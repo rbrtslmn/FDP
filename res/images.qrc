@@ -2,5 +2,9 @@
     <qresource prefix="/symbols">
         <file>download.png</file>
         <file>icon.png</file>
+        <file>delete-g.png</file>
+        <file>folder-g.png</file>
+        <file>restart-g.png</file>
+        <file>stop-g.png</file>
     </qresource>
 </RCC>
