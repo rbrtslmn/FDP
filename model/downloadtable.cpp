@@ -112,11 +112,15 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
                 return QVariant(QColor(255, 100, 100));
             // aborted downloads
             if(downloadManager->downloadAt(index.row()).status == net::StatAborted)
-                return QVariant(QColor(255, 255, 100));
+                return QVariant(QColor(255, 163, 100));
             // pending downloads
-            if(downloadManager->downloadAt(index.row()).status == net::StatPending
-            || downloadManager->downloadAt(index.row()).status == net::StatInProgress)
-                return QVariant(QColor(100, 255, 255));
+            if(downloadManager->downloadAt(index.row()).status == net::StatPending)
+                return QVariant(QColor(100, 100, 255));
+            if(downloadManager->downloadAt(index.row()).status == net::StatInProgress) {
+                qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
+                int diff = val>0?(155 * val):0;
+                return QVariant(QColor(100, 100+diff, 255-diff));
+            }
             // finished downloads
             if(downloadManager->downloadAt(index.row()).status == net::StatFinished)
                 return QVariant(QColor(100, 255, 100));
