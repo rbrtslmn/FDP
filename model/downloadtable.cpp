@@ -171,7 +171,7 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
     case net::StatLoginError:
         return "Wrong Login";
     case net::StatAborted:
-        return "Download Aborted";
+        return "Aborted";
     case net::StatInvalidUrl:
         return "Invalid URL";
     }
