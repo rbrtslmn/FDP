@@ -219,7 +219,7 @@ DownloadManager::~DownloadManager() {
     saveDownloads();
     for(int i=0; i<downloadList.length(); i++) {
         downloadList[i].downloader->stop(false);
-        delete downloadList[i].downloader;
+        // delete downloadList[i].downloader; // causes crashes on windows
     }
 }
 

@@ -117,6 +117,9 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
             if(downloadManager->downloadAt(index.row()).status == net::StatPending
             || downloadManager->downloadAt(index.row()).status == net::StatInProgress)
                 return QVariant(QColor(100, 255, 255));
+            // finished downloads
+            if(downloadManager->downloadAt(index.row()).status == net::StatFinished)
+                return QVariant(QColor(100, 255, 100));
         }
     // progressbar
     } else if(role == Qt::BackgroundRole) {
