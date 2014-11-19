@@ -99,45 +99,38 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         case 7: // path
             return downloadManager->downloadAt(index.row()).path;
         }
+    } else if(role == Qt::DecorationRole) {
+        // status
+        if(index.column() == 1) {
+            // error downloads
+            if(downloadManager->downloadAt(index.row()).status == net::StatError
+            || downloadManager->downloadAt(index.row()).status == net::StatFWError
+            || downloadManager->downloadAt(index.row()).status == net::StatFileOffline
+            || downloadManager->downloadAt(index.row()).status == net::StatLoginError
+            || downloadManager->downloadAt(index.row()).status == net::StatInvalidUrl
+            || downloadManager->downloadAt(index.row()).status == net::StatTimeout)
+                return QVariant(QColor(255, 100, 100));
+            // aborted downloads
+            if(downloadManager->downloadAt(index.row()).status == net::StatAborted)
+                return QVariant(QColor(255, 255, 100));
+            // pending downloads
+            if(downloadManager->downloadAt(index.row()).status == net::StatPending
+            || downloadManager->downloadAt(index.row()).status == net::StatInProgress)
+                return QVariant(QColor(100, 255, 255));
+        }
+    // progressbar
     } else if(role == Qt::BackgroundRole) {
-        if(downloadManager->downloadAt(index.row()).status == net::StatError
-        || downloadManager->downloadAt(index.row()).status == net::StatFWError
-        || downloadManager->downloadAt(index.row()).status == net::StatFileOffline
-        || downloadManager->downloadAt(index.row()).status == net::StatLoginError
-        || downloadManager->downloadAt(index.row()).status == net::StatInvalidUrl
-        || downloadManager->downloadAt(index.row()).status == net::StatTimeout)
-            return QVariant(QColor(255, 100, 100));
-        if(downloadManager->downloadAt(index.row()).status == net::StatAborted)
-            return QVariant(QColor(255, 255, 100));
         if(index.column() == 3
-        && progressColumnWidth != 0 &&
-        (downloadManager->downloadAt(index.row()).status == net::StatInProgress ||
-         downloadManager->downloadAt(index.row()).status == net::StatFinished)) {
+        && progressColumnWidth != 0
+        && downloadManager->downloadAt(index.row()).status == net::StatInProgress) {
             qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
-            if(val >= 0.9999)
-                return QVariant(QColor(100, 255, 100));
-            else if(val > 0) {
+            if(val > 0) {
                 QLinearGradient grad(0, 0, progressColumnWidth, 0);
-                grad.setColorAt(val , QColor(100, 255, 100));
-                grad.setColorAt(val+0.0001, Qt::white);
+                grad.setColorAt(val, QColor(100, 255, 100));
+                grad.setColorAt(val<0.9999?(val+0.0001):1, Qt::white);
                 return QBrush(grad);
             }
         }
-
-        /*
-        if(index.column() == 3 &&
-        (downloadManager->downloadAt(index.row()).status == net::StatInProgress ||
-         downloadManager->downloadAt(index.row()).status == net::StatFinished)) {
-            qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
-            QLinearGradient grad;
-            grad.setCoordinateMode(QGradient::ObjectBoundingMode);
-            grad.setStart(0, 0);
-            grad.setFinalStop(1, 0);
-            grad.setColorAt(val , QColor(100, 255, 100));
-            grad.setColorAt(val+0.00001, Qt::white);
-            return QBrush(grad);
-        }
-        */
     }
     return QVariant();
 }
