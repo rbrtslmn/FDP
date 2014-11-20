@@ -33,6 +33,9 @@ public slots:
     void setProgressColumnWidth(int progressColumnWidth);
 
 protected:
+    QColor interpolateProgressColor(int idx) const;
+
+protected:
     const net::DownloadManager *downloadManager;
     int progressColumnWidth;
 

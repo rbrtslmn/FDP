@@ -117,9 +117,7 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
             if(downloadManager->downloadAt(index.row()).status == net::StatPending)
                 return QVariant(QColor(100, 100, 255));
             if(downloadManager->downloadAt(index.row()).status == net::StatInProgress) {
-                qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
-                int diff = val>0?(155 * val):0;
-                return QVariant(QColor(100, 100+diff, 255-diff));
+                return QVariant(interpolateProgressColor(index.row()));
             }
             // finished downloads
             if(downloadManager->downloadAt(index.row()).status == net::StatFinished)
@@ -133,13 +131,20 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
             qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
             if(val > 0) {
                 QLinearGradient grad(0, 0, progressColumnWidth, 0);
-                grad.setColorAt(val, QColor(100, 255, 100));
+                grad.setColorAt(0, QColor(100, 100, 255));
+                grad.setColorAt(val, interpolateProgressColor(index.row()));
                 grad.setColorAt(val<0.9999?(val+0.0001):1, Qt::white);
                 return QBrush(grad);
             }
         }
     }
     return QVariant();
+}
+
+QColor DownloadTable::interpolateProgressColor(int idx) const {
+    qreal val = downloadManager->downloadAt(idx).progress/(qreal)downloadManager->downloadAt(idx).size;
+    int diff = val>0?(155 * val):0;
+    return QColor(100, 100+diff, 255-diff);
 }
 
 QString DownloadTable::Remaining(qint64 curr, qint64 size, float Bps) {
