@@ -120,7 +120,6 @@ void DownloadManager::startDownload(const DownloadInformation downloadInformatio
 }
 
 void DownloadManager::handleDownloadError(QString msg) {
-    qDebug() << msg;
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].downloader->disconnect();
@@ -165,7 +164,7 @@ void DownloadManager::handleDownloadFinished() {
                 // free-way.me made a type here:
                 // "Ungütiger Hoster" should be "Ungültiger Hoster"
                 // in case they fix this FDP should check for both strings
-                else if(downloadList[i].error.contains(QRegExp("Ungül{0,1}tiger Hoster")))
+                else if(downloadList[i].error.contains(QRegExp("Ungül?tiger Hoster")))
                     downloadList[i].status = StatInvalidUrl;
                 else
                     downloadList[i].status = StatFWError;

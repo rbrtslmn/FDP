@@ -45,6 +45,7 @@ protected:
     // helpter to clean constructor (only called once)
     void setupTable();
     void setupConnections();
+    void handleContextMenuChoice(QString text, int i);
 
 protected:
     Ui::MainWindow *ui;

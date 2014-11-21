@@ -94,6 +94,7 @@ void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
     QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
+    // if there are selected rows
     if(selectedDownloads.length() > 0) {
         QMenu contextMenu;
         contextMenu.addAction(QIcon(":/symbols/folder-g.png"), "Open Directory");
@@ -101,26 +102,40 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         contextMenu.addAction(QIcon(":/symbols/restart-g.png"), "Restart");
         contextMenu.addAction(QIcon(":/symbols/delete-g.png"), "Delete");
         QAction* selectedItem = contextMenu.exec(globalPos);
+        // if an action was clicked
         if(selectedItem) {
-            QStringList locations;
-            for(int i=selectedDownloads.length() - 1; i >= 0; i--) {
-                if(selectedItem->text() == "Open Directory") {
-                    QString path = downloadManager->downloadAt(selectedDownloads.at(i).row()).path;
-                    if(!locations.contains(path)) {
-                        locations.append(path);
-                        QDesktopServices::openUrl(path);
+            // search for index of download table from indexes of proxy model
+            // this is needed because the removing of rows has to be done in an index decreasing order
+            QList<int> sourceIndexes;
+            for(int i=downloadManager->numberOfDownloads()-1; i>=0; i--) {
+                int idx = sortProxyModel->mapFromSource(downloadTable->index(i, 0)).row();
+                for(int j=0; j<selectedDownloads.length(); j++) {
+                    if(idx == selectedDownloads.at(j).row()) {
+                        // a call of handleContextMenuChoice at this position isn't possible
+                        // because of the changing mapping if rows are deleted
+                        sourceIndexes.append(i);
+                        break;
                     }
-                 } else if(selectedItem->text() == "Stop")
-                    downloadManager->stopDownload(selectedDownloads.at(i).row());
-                else if(selectedItem->text() == "Restart")
-                    downloadManager->restartDownload(selectedDownloads.at(i).row());
-                else if(selectedItem->text() == "Delete") {
-                    downloadTable->beginDelete(selectedDownloads.at(i).row());
-                    downloadManager->deleteDownload(selectedDownloads.at(i).row());
-                    downloadTable->endDelete();
                 }
             }
+            // row index decreases with increasing array index
+            for(int i=0; i<sourceIndexes.length(); i++)
+                handleContextMenuChoice(selectedItem->text(), sourceIndexes.at(i));
         }
+    }
+}
+
+void MainWindow::handleContextMenuChoice(QString text, int i) {
+    if(text == "Open Directory") {
+        QDesktopServices::openUrl(downloadManager->downloadAt(i).path);
+    } else if(text == "Stop") {
+        downloadManager->stopDownload(i);
+    } else if(text == "Restart") {
+        downloadManager->restartDownload(i);
+    } else if(text == "Delete") {
+        downloadTable->beginDelete(i);
+        downloadManager->deleteDownload(i);
+        downloadTable->endDelete();
     }
 }
 
