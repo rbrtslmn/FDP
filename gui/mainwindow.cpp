@@ -212,6 +212,8 @@ void MainWindow::saveSettings() {
     settings.setValue("username", ui->lineEdit->text());
     settings.setValue("password", ui->checkBox->checkState()?ui->lineEdit_2->text():"");
     settings.setValue("savepass", ui->checkBox->checkState());
+    // tab
+    settings.setValue("active-tab", ui->tabWidget->currentIndex());
     // download settings
     settings.setValue("path",     ui->lineEdit_3->text());
     settings.setValue("parallel", ui->spinBox->value());
@@ -243,6 +245,8 @@ void MainWindow::loadSettings() {
         ui->lineEdit->setText(settings.value("username").toString());
         ui->lineEdit_2->setText(settings.value("password").toString());
         ui->checkBox->setChecked(settings.value("savepass").toBool());
+        // tab
+        ui->tabWidget->setCurrentIndex(settings.value("active-tab").toInt());
         // download settings
         ui->lineEdit_3->setText(settings.value("path").toString());
         ui->spinBox->setValue(settings.value("parallel").toInt());
