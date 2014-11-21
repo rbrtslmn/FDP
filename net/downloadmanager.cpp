@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QApplication>
+#include <QTextDocument>
 
 namespace fdp {
 namespace net {
@@ -141,8 +142,9 @@ void DownloadManager::parseErrorMessage(int i) {
         if(regExp.indexIn(content) != -1) {
             QString err = regExp.capturedTexts()[0].mid(14);
             err = err.left(err.indexOf("</p>"));
-            downloadList[i].error = err;
-            qDebug() << err;
+            QTextDocument text;
+            text.setHtml(err);
+            downloadList[i].error = text.toPlainText();
         }
     }
 }
@@ -158,9 +160,12 @@ void DownloadManager::handleDownloadFinished() {
                 parseErrorMessage(i);
                 if(downloadList[i].error.contains("File offline"))
                     downloadList[i].status = StatFileOffline;
-                else if(downloadList[i].error.contains("Ung&uuml;ltiger Login"))
+                else if(downloadList[i].error.contains("Ungültiger Login"))
                     downloadList[i].status = StatLoginError;
-                else if(downloadList[i].error.contains("Ung&uuml;tiger Hoster"))
+                // free-way.me made a type here:
+                // "Ungütiger Hoster" should be "Ungültiger Hoster"
+                // in case they fix this FDP should check for both strings
+                else if(downloadList[i].error.contains(QRegExp("Ungül{0,1}tiger Hoster")))
                     downloadList[i].status = StatInvalidUrl;
                 else
                     downloadList[i].status = StatFWError;

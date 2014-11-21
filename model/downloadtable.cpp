@@ -82,6 +82,8 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
         return dataBackgroundRole(index);
     case Qt::UserRole:
         return dataUserRole(index);
+    case Qt::ToolTipRole:
+        return downloadManager->downloadAt(index.row()).error;
     }
     return QVariant();
 }

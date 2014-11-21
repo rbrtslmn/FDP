@@ -13,7 +13,7 @@ struct DownloadInformation {
     QString file;
     QString path;
     QString url;
-    QString error; // TODO: use this
+    QString error;
     qint64 size;
     qint64 progress;
     float speed;
