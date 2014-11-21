@@ -20,7 +20,8 @@ public:
     virtual QVariant data(const QModelIndex &index, int role) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    static QString Remaining(qint64 curr, qint64 size, float Bps);
+    static float Remaining(qint64 curr, qint64 size, float Bps);
+    static QString Remaining(float sec);
     static QString B2String(float Bps);
     static QString DownloadStatus2String(net::DownloadStatus status);
 

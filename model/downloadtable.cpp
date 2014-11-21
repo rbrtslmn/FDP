@@ -87,7 +87,30 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
 }
 
 QVariant DownloadTable::dataUserRole(const QModelIndex &index) const {
-    (void)index;
+    switch(index.column()) {
+    case ColumnFile:
+        return downloadManager->downloadAt(index.row()).file;
+    case ColumnStatus:
+        return downloadManager->downloadAt(index.row()).status;
+    case ColumnSize:
+        return downloadManager->downloadAt(index.row()).size;
+    case ColumnProgress:
+        if(downloadManager->downloadAt(index.row()).size == 0)
+            return 0;
+        else
+            return downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
+    case ColumnSpeed:
+        return downloadManager->downloadAt(index.row()).speed;
+    case ColumnRemaining:
+        return Remaining(
+            downloadManager->downloadAt(index.row()).progress,
+            downloadManager->downloadAt(index.row()).size,
+            downloadManager->downloadAt(index.row()).speed);
+    case ColumnUrl:
+        return downloadManager->downloadAt(index.row()).url;
+    case ColumnPath:
+        return downloadManager->downloadAt(index.row()).path;
+    }
     return QVariant();
 }
 
@@ -152,7 +175,7 @@ QVariant DownloadTable::dataDisplayRole(const QModelIndex &index) const {
         return "";
     case ColumnRemaining:
         if(downloadManager->downloadAt(index.row()).status == net::StatInProgress)
-            return Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed);
+            return Remaining(Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed));
         return "";
     case ColumnUrl:
         return downloadManager->downloadAt(index.row()).url;
@@ -168,14 +191,17 @@ QColor DownloadTable::interpolateProgressColor(int idx) const {
     return QColor(100, 100+diff, 255-diff);
 }
 
-QString DownloadTable::Remaining(qint64 curr, qint64 size, float Bps) {
-    float s = (size - curr)/Bps;
+float DownloadTable::Remaining(qint64 curr, qint64 size, float Bps) {
+    return (size - curr)/Bps;
+}
+
+QString DownloadTable::Remaining(float sec) {
     int i = 0;
-    while(s >= 60 && i<2) {
-        s /= 60;
+    while(sec >= 60 && i<2) {
+        sec /= 60;
         i++;
     }
-    return tr("%1 %2").arg(s, 0, '0', 2).arg(i<1?"s":(i<2?"min":"h"));
+    return tr("%1 %2").arg(sec, 0, '0', 2).arg(i<1?"s":(i<2?"min":"h"));
 }
 
 QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
