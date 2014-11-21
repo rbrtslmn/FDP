@@ -210,10 +210,8 @@ void MainWindow::saveSettings() {
     int order = ui->tableView->horizontalHeader()->sortIndicatorOrder()==Qt::AscendingOrder?0:1;
     settings.setValue("sort-order", order);
     // table section postions
-    for(int i=0; i<8; i++) {
-        qDebug() << "pos" << i << "log idx" << ui->tableView->horizontalHeader()->logicalIndex(i);
+    for(int i=0; i<8; i++)
         settings.setValue(tr("column-position-%1").arg(i), ui->tableView->horizontalHeader()->logicalIndex(i));
-    }
     // settings indicator
     settings.setValue("saved", true);
 }
@@ -249,20 +247,10 @@ void MainWindow::loadTableSettings() {
         // sorting
         Qt::SortOrder order = settings.value("sort-order").toInt()==1?Qt::DescendingOrder:Qt::AscendingOrder;
         ui->tableView->horizontalHeader()->setSortIndicator(settings.value("sort-index").toInt(), order);
-
         // table section postions
         for(int i=0; i<8; i++)
             ui->tableView->horizontalHeader()->moveSection(
                 ui->tableView->horizontalHeader()->visualIndex(settings.value(tr("column-position-%1").arg(i)).toInt()), i);
-
-
-
-
-
-
-
-
-                    // moveSection(settings.value(tr("column-position-%1").arg(i)).toInt(), i);
     }
 }
 
