@@ -15,7 +15,8 @@ namespace gui {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    daemon(new net::HTTPDaemon())
+    daemon(new net::HTTPDaemon()),
+    sortProxyModel(new QSortFilterProxyModel())
 {
     // set up ui
     ui->setupUi(this);
@@ -28,15 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     loginData.password = ui->lineEdit_2->text();
     downloadManager = new net::DownloadManager(ui->spinBox->value(), getReloadSettings(), loginData);
     // set up download table
-    downloadTable = new model::DownloadTable(downloadManager);
-    ui->tableView->setModel(downloadTable);
-    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(handleSectionResize(int,int,int)));
-    loadColumnSizes();
-    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableView->setWordWrap(false);
-    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->tableView->verticalHeader()->setHidden(true);
+    setupTable();
     // set up http daemon
     if(!daemon->listen())
         QMessageBox::warning(this, "Socket Error",
@@ -64,8 +57,26 @@ MainWindow::~MainWindow() {
     daemon->stop();
     delete downloadTable;
     delete downloadManager;
+    delete sortProxyModel;
     delete daemon;
     delete ui;
+}
+
+void MainWindow::setupTable() {
+    // set up model
+    downloadTable = new model::DownloadTable(downloadManager);
+    sortProxyModel->setSourceModel(downloadTable);
+    ui->tableView->setModel(sortProxyModel);
+    // section siizes
+    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(handleSectionResize(int,int,int)));
+    loadColumnSizes();
+    // table settings
+    ui->tableView->setSortingEnabled(true);
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableView->setWordWrap(false);
+    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableView->verticalHeader()->setHidden(true);
 }
 
 void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {

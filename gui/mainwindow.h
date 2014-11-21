@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QSortFilterProxyModel>
 
 #include <net/httpdaemon.h>
 #include <net/downloadmanager.h>
@@ -41,12 +42,14 @@ protected:
     void loadSettings();
     void loadColumnSizes();
     int getReloadSettings();
+    void setupTable();
 
 protected:
     Ui::MainWindow *ui;
-    model::DownloadTable *downloadTable;
     net::HTTPDaemon *daemon;
     fdp::net::DownloadManager *downloadManager;
+    model::DownloadTable *downloadTable;
+    QSortFilterProxyModel *sortProxyModel;
     QTimer timer;
 
 };
