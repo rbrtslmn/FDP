@@ -131,7 +131,6 @@ QVariant DownloadTable::data(const QModelIndex &index, int role) const {
             qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
             if(val > 0) {
                 QLinearGradient grad(0, 0, progressColumnWidth, 0);
-                grad.setColorAt(0, QColor(100, 100, 255));
                 grad.setColorAt(val, interpolateProgressColor(index.row()));
                 grad.setColorAt(val<0.9999?(val+0.0001):1, Qt::white);
                 return QBrush(grad);
