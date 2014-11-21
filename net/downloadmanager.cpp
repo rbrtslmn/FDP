@@ -132,6 +132,21 @@ void DownloadManager::handleDownloadError(QString msg) {
     checkDownloads();
 }
 
+void DownloadManager::parseErrorMessage(int i) {
+    QFile file(downloadList[i].path + downloadList[i].file);
+    if(file.open(QIODevice::ReadOnly)) {
+        QString content = file.readAll();
+        file.close();
+        QRegExp regExp("<p id='error'>.*</p>");
+        if(regExp.indexIn(content) != -1) {
+            QString err = regExp.capturedTexts()[0].mid(14);
+            err = err.left(err.indexOf("</p>"));
+            downloadList[i].error = err;
+            qDebug() << err;
+        }
+    }
+}
+
 void DownloadManager::handleDownloadFinished() {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
@@ -140,18 +155,15 @@ void DownloadManager::handleDownloadFinished() {
             downloadList[i].status = StatFinished;
             // free-way.me error
             if(downloadList[i].file.startsWith("unnamed") && downloadList[i].size < 1024) {
-                downloadList[i].status = StatFWError;
-                QFile file(downloadList[i].path + downloadList[i].file);
-                if(file.open(QIODevice::ReadOnly)) {
-                    QString content = file.readAll();
-                    file.close();
-                    if(content.contains("File offline."))
-                        downloadList[i].status = StatFileOffline;
-                    else if(content.contains("Ung&uuml;ltiger Login"))
-                        downloadList[i].status = StatLoginError;
-                    else if(content.contains("Ung&uuml;tiger Hoster"))
-                        downloadList[i].status = StatInvalidUrl;
-                }
+                parseErrorMessage(i);
+                if(downloadList[i].error.contains("File offline"))
+                    downloadList[i].status = StatFileOffline;
+                else if(downloadList[i].error.contains("Ung&uuml;ltiger Login"))
+                    downloadList[i].status = StatLoginError;
+                else if(downloadList[i].error.contains("Ung&uuml;tiger Hoster"))
+                    downloadList[i].status = StatInvalidUrl;
+                else
+                    downloadList[i].status = StatFWError;
             }
             break;
         }
