@@ -37,6 +37,20 @@ MainWindow::MainWindow(QWidget *parent) :
             "This can be caused by running multiple instances of this application.");
     timer.start(1000);
     // set up connections
+    setupConnections();
+}
+
+MainWindow::~MainWindow() {
+    saveSettings();
+    daemon->stop();
+    delete downloadTable;
+    delete downloadManager;
+    delete sortProxyModel;
+    delete daemon;
+    delete ui;
+}
+
+void MainWindow::setupConnections() {
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
     connect(&timer, SIGNAL(timeout()), ui->tableView->viewport(), SLOT(update()));
     connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
@@ -52,19 +66,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->lineEdit_2, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
 }
 
-MainWindow::~MainWindow() {
-    saveSettings();
-    daemon->stop();
-    delete downloadTable;
-    delete downloadManager;
-    delete sortProxyModel;
-    delete daemon;
-    delete ui;
-}
-
 void MainWindow::setupTable() {
     // set up model
     downloadTable = new model::DownloadTable(downloadManager);
+    sortProxyModel->setSortRole(Qt::UserRole);
     sortProxyModel->setSourceModel(downloadTable);
     ui->tableView->setModel(sortProxyModel);
     // section siizes

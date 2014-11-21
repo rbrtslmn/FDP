@@ -42,7 +42,9 @@ protected:
     void loadSettings();
     void loadColumnSizes();
     int getReloadSettings();
+    // helpter to clean constructor (only called once)
     void setupTable();
+    void setupConnections();
 
 protected:
     Ui::MainWindow *ui;
