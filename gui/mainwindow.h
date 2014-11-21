@@ -40,7 +40,7 @@ protected slots:
 protected:
     void saveSettings();
     void loadSettings();
-    void loadColumnSizes();
+    void loadTableSettings();
     int getReloadSettings();
     // helpter to clean constructor (only called once)
     void setupTable();

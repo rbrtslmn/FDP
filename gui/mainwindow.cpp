@@ -72,16 +72,17 @@ void MainWindow::setupTable() {
     sortProxyModel->setSortRole(Qt::UserRole);
     sortProxyModel->setSourceModel(downloadTable);
     ui->tableView->setModel(sortProxyModel);
-    // section siizes
+    // connection before setting section size
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(handleSectionResize(int,int,int)));
-    loadColumnSizes();
     // table settings
     ui->tableView->setSortingEnabled(true);
+    ui->tableView->horizontalHeader()->setSectionsMovable(true);
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->setWordWrap(false);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->verticalHeader()->setHidden(true);
+    loadTableSettings();
 }
 
 void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
@@ -204,6 +205,10 @@ void MainWindow::saveSettings() {
     // table column size
     for(int i=0; i<8; i++)
         settings.setValue(tr("column-width-%1").arg(i), ui->tableView->horizontalHeader()->sectionSize(i));
+    // sorting
+    settings.setValue("sort-index", ui->tableView->horizontalHeader()->sortIndicatorSection());
+    int order = ui->tableView->horizontalHeader()->sortIndicatorOrder()==Qt::AscendingOrder?0:1;
+    settings.setValue("sort-order", order);
 }
 
 void MainWindow::loadSettings() {
@@ -223,14 +228,20 @@ void MainWindow::loadSettings() {
     resize(settings.value("width").toInt(), settings.value("height").toInt());
 }
 
-void MainWindow::loadColumnSizes() {
+void MainWindow::loadTableSettings() {
+
+    // TODO: seve section order to QSettings
+
     QSettings settings("Codingspezis", "FDP");
-    // table column size
+    // column sizes
     for(int i=0; i<8; i++) {
         int width = settings.value(tr("column-width-%1").arg(i)).toInt();
         if(width > 0)
             ui->tableView->horizontalHeader()->resizeSection(i, width);
     }
+    // sorting
+    Qt::SortOrder order = settings.value("sort-order").toInt()==1?Qt::DescendingOrder:Qt::AscendingOrder;
+    ui->tableView->horizontalHeader()->setSortIndicator(settings.value("sort-index").toInt(), order);
 }
 
 } // end of namespace gui
