@@ -34,6 +34,12 @@ public slots:
 
 protected:
     QColor interpolateProgressColor(int idx) const;
+    QVariant dataDisplayRole(const QModelIndex &index) const;
+    QVariant dataDecorationRole(const QModelIndex &index) const;
+    QVariant dataBackgroundRole(const QModelIndex &index) const;
+    QVariant dataUserRole(const QModelIndex &index) const;
+
+
 
 protected:
     const net::DownloadManager *downloadManager;
