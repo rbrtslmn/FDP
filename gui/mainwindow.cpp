@@ -53,7 +53,7 @@ MainWindow::~MainWindow() {
 void MainWindow::setupConnections() {
     connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
     connect(&timer, SIGNAL(timeout()), ui->tableView->viewport(), SLOT(update()));
-    connect(daemon, SIGNAL(receivedLinks(QString)), ui->plainTextEdit, SLOT(appendPlainText(QString)));
+    connect(daemon, SIGNAL(receivedLinks(QString)), this, SLOT(handleReceivedLinks(QString)));
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleContextMenuRequest(QPoint)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
     connect(ui->toolButton, SIGNAL(clicked()), this, SLOT(choosePath()));
@@ -64,6 +64,11 @@ void MainWindow::setupConnections() {
     connect(ui->checkBox_4, SIGNAL(toggled(bool)), this, SLOT(updateReloadSettings()));
     connect(ui->lineEdit, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
     connect(ui->lineEdit_2, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
+}
+
+void MainWindow::handleReceivedLinks(QString links) {
+    ui->plainTextEdit->appendPlainText(links);
+    ui->tabWidget->setCurrentIndex(0);
 }
 
 void MainWindow::setupTable() {

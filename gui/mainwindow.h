@@ -36,6 +36,7 @@ protected slots:
     void handleLoginData();
     void handleContextMenuRequest(const QPoint &pos);
     void handleSectionResize(int idx, int oldWidth, int newWidth);
+    void handleReceivedLinks(QString links);
 
 protected:
     void saveSettings();
