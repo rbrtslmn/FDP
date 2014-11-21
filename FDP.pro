@@ -32,7 +32,8 @@ HEADERS  += \
     net/downloadmanager.h \
     net/downloadstatus.h \
     net/downloadinformation.h \
-    net/logindata.h
+    net/logindata.h \
+    model/downloadtablecolumns.h
 
 FORMS    += \
     gui/mainwindow.ui

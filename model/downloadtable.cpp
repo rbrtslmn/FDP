@@ -1,4 +1,5 @@
 #include "downloadtable.h"
+#include "downloadtablecolumns.h"
 
 #include <QPainter>
 
@@ -45,21 +46,21 @@ QVariant DownloadTable::headerData(int section, Qt::Orientation orientation, int
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
             switch (section) {
-                case 0:
+                case ColumnFile:
                     return "File";
-                case 1:
+                case ColumnStatus:
                     return "Status";
-                case 2:
+                case ColumnSize:
                     return "Size";
-                case 3:
+                case ColumnProgress:
                     return "Progress";
-                case 4:
+                case ColumnSpeed:
                     return "Speed";
-                case 5:
+                case ColumnRemaining:
                     return "Remaining";
-                case 6:
+                case ColumnUrl:
                     return "URL";
-                case 7:
+                case ColumnPath:
                     return "Path";
             }
         }
@@ -91,7 +92,7 @@ QVariant DownloadTable::dataUserRole(const QModelIndex &index) const {
 }
 
 QVariant DownloadTable::dataBackgroundRole(const QModelIndex &index) const {
-    if(index.column() == 3
+    if(index.column() == ColumnProgress
     && progressColumnWidth != 0
     && downloadManager->downloadAt(index.row()).status == net::StatInProgress) {
         qreal val = downloadManager->downloadAt(index.row()).progress/(qreal)downloadManager->downloadAt(index.row()).size;
@@ -106,8 +107,7 @@ QVariant DownloadTable::dataBackgroundRole(const QModelIndex &index) const {
 }
 
 QVariant DownloadTable::dataDecorationRole(const QModelIndex &index) const {
-    // status
-    if(index.column() == 1) {
+    if(index.column() == ColumnStatus) {
         // error downloads
         if(downloadManager->downloadAt(index.row()).status == net::StatError
         || downloadManager->downloadAt(index.row()).status == net::StatFWError
@@ -134,29 +134,29 @@ QVariant DownloadTable::dataDecorationRole(const QModelIndex &index) const {
 
 QVariant DownloadTable::dataDisplayRole(const QModelIndex &index) const {
     switch(index.column()) {
-    case 0: // file
+    case ColumnFile:
         return downloadManager->downloadAt(index.row()).file;
-    case 1: // status
+    case ColumnStatus:
         return DownloadStatus2String(downloadManager->downloadAt(index.row()).status);
-    case 2: // size
+    case ColumnSize:
         if(downloadManager->downloadAt(index.row()).size != 0)
             return B2String(downloadManager->downloadAt(index.row()).size);
         else return "";
-    case 3: // progress
+    case ColumnProgress:
         if(downloadManager->downloadAt(index.row()).size != 0)
             return tr("%1 %").arg((100 * downloadManager->downloadAt(index.row()).progress) / (float)downloadManager->downloadAt(index.row()).size, 0, '0', 2);
         return tr("0.00 %");
-    case 4: // speed
+    case ColumnSpeed:
         if(downloadManager->downloadAt(index.row()).status == net::StatInProgress)
             return B2String(downloadManager->downloadAt(index.row()).speed).append("/s");
         return "";
-    case 5: // remaining
+    case ColumnRemaining:
         if(downloadManager->downloadAt(index.row()).status == net::StatInProgress)
             return Remaining(downloadManager->downloadAt(index.row()).progress, downloadManager->downloadAt(index.row()).size, downloadManager->downloadAt(index.row()).speed);
         return "";
-    case 6: // url
+    case ColumnUrl:
         return downloadManager->downloadAt(index.row()).url;
-    case 7: // path
+    case ColumnPath:
         return downloadManager->downloadAt(index.row()).path;
     }
     return QVariant();
