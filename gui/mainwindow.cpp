@@ -209,39 +209,61 @@ void MainWindow::saveSettings() {
     settings.setValue("sort-index", ui->tableView->horizontalHeader()->sortIndicatorSection());
     int order = ui->tableView->horizontalHeader()->sortIndicatorOrder()==Qt::AscendingOrder?0:1;
     settings.setValue("sort-order", order);
+    // table section postions
+    for(int i=0; i<8; i++) {
+        qDebug() << "pos" << i << "log idx" << ui->tableView->horizontalHeader()->logicalIndex(i);
+        settings.setValue(tr("column-position-%1").arg(i), ui->tableView->horizontalHeader()->logicalIndex(i));
+    }
+    // settings indicator
+    settings.setValue("saved", true);
 }
 
 void MainWindow::loadSettings() {
     QSettings settings("Codingspezis", "FDP");
-    // login
-    ui->lineEdit->setText(settings.value("username").toString());
-    ui->lineEdit_2->setText(settings.value("password").toString());
-    ui->checkBox->setChecked(settings.value("savepass").toBool());
-    // download settings
-    ui->lineEdit_3->setText(settings.value("path").toString());
-    ui->spinBox->setValue(settings.value("parallel", QVariant(2)).toInt());
-    ui->checkBox_2->setChecked(settings.value("reload-fwerror").toBool());
-    ui->checkBox_3->setChecked(settings.value("reload-timeout").toBool());
-    ui->checkBox_4->setChecked(settings.value("reload-neterror").toBool());
-    ui->comboBox->setCurrentIndex(settings.value("reloadorder", QVariant(1)).toInt());
-    // window size
-    resize(settings.value("width").toInt(), settings.value("height").toInt());
+    if(settings.value("saved").toBool()) {
+        // login
+        ui->lineEdit->setText(settings.value("username").toString());
+        ui->lineEdit_2->setText(settings.value("password").toString());
+        ui->checkBox->setChecked(settings.value("savepass").toBool());
+        // download settings
+        ui->lineEdit_3->setText(settings.value("path").toString());
+        ui->spinBox->setValue(settings.value("parallel").toInt());
+        ui->checkBox_2->setChecked(settings.value("reload-fwerror").toBool());
+        ui->checkBox_3->setChecked(settings.value("reload-timeout").toBool());
+        ui->checkBox_4->setChecked(settings.value("reload-neterror").toBool());
+        ui->comboBox->setCurrentIndex(settings.value("reloadorder").toInt());
+        // window size
+        resize(settings.value("width").toInt(), settings.value("height").toInt());
+    }
 }
 
 void MainWindow::loadTableSettings() {
-
-    // TODO: seve section order to QSettings
-
     QSettings settings("Codingspezis", "FDP");
-    // column sizes
-    for(int i=0; i<8; i++) {
-        int width = settings.value(tr("column-width-%1").arg(i)).toInt();
-        if(width > 0)
-            ui->tableView->horizontalHeader()->resizeSection(i, width);
+    if(settings.value("saved").toBool()) {
+        // column sizes
+        for(int i=0; i<8; i++) {
+            int width = settings.value(tr("column-width-%1").arg(i)).toInt();
+            if(width > 0)
+                ui->tableView->horizontalHeader()->resizeSection(i, width);
+        }
+        // sorting
+        Qt::SortOrder order = settings.value("sort-order").toInt()==1?Qt::DescendingOrder:Qt::AscendingOrder;
+        ui->tableView->horizontalHeader()->setSortIndicator(settings.value("sort-index").toInt(), order);
+
+        // table section postions
+        for(int i=0; i<8; i++)
+            ui->tableView->horizontalHeader()->moveSection(
+                ui->tableView->horizontalHeader()->visualIndex(settings.value(tr("column-position-%1").arg(i)).toInt()), i);
+
+
+
+
+
+
+
+
+                    // moveSection(settings.value(tr("column-position-%1").arg(i)).toInt(), i);
     }
-    // sorting
-    Qt::SortOrder order = settings.value("sort-order").toInt()==1?Qt::DescendingOrder:Qt::AscendingOrder;
-    ui->tableView->horizontalHeader()->setSortIndicator(settings.value("sort-index").toInt(), order);
 }
 
 } // end of namespace gui
