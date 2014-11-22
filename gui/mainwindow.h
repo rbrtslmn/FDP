@@ -47,6 +47,8 @@ protected:
     void setupTable();
     void setupConnections();
     void handleContextMenuChoice(QString text, int i);
+    bool eventFilter(QObject *obj, QEvent *event);
+    QList<int> descendingTableSelection();
 
 protected:
     Ui::MainWindow *ui;

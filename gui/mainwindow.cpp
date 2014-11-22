@@ -71,6 +71,23 @@ void MainWindow::handleReceivedLinks(QString links) {
     ui->tabWidget->setCurrentIndex(0);
 }
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if(keyEvent->key() == Qt::Key_Delete) {
+            QList<int> selection = descendingTableSelection();
+            // TODO: add asking
+            for(int i=0; i<selection.length(); i++) {
+                downloadTable->beginDelete(selection.at(i));
+                downloadManager->deleteDownload(selection.at(i));
+                downloadTable->endDelete();
+            }
+            return true;
+        }
+    }
+    return QObject::eventFilter(obj, event);
+}
+
 void MainWindow::setupTable() {
     // set up model
     downloadTable = new model::DownloadTable(downloadManager);
@@ -81,6 +98,7 @@ void MainWindow::setupTable() {
     // connection before setting section size
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(handleSectionResize(int,int,int)));
     // table settings
+    ui->tableView->installEventFilter(this);
     ui->tableView->setSortingEnabled(true);
     ui->tableView->horizontalHeader()->setSectionsMovable(true);
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -91,6 +109,25 @@ void MainWindow::setupTable() {
     loadTableSettings();
 }
 
+QList<int> MainWindow::descendingTableSelection() {
+    QList<int> returnValue;
+    QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
+    // search for index of download table from indexes of proxy model
+    // this is needed because the removing of rows has to be done in an index descending order
+    for(int i=downloadManager->numberOfDownloads()-1; i>=0; i--) {
+        int idx = sortProxyModel->mapFromSource(downloadTable->index(i, 0)).row();
+        for(int j=0; j<selectedDownloads.length(); j++) {
+            if(idx == selectedDownloads.at(j).row()) {
+                // a call of handleContextMenuChoice at this position isn't possible
+                // because of the changing mapping if rows are deleted
+                returnValue.append(i);
+                break;
+            }
+        }
+    }
+    return returnValue;
+}
+
 void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
     (void)oldWidth;
     if(idx == 3)
@@ -99,9 +136,9 @@ void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
 
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
-    QModelIndexList selectedDownloads = ui->tableView->selectionModel()->selectedRows();
+    QList<int> selectedDownloads = descendingTableSelection();
     // if there are selected rows
-    if(selectedDownloads.length() > 0) {
+    if(!selectedDownloads.isEmpty()) {
         QMenu contextMenu;
         contextMenu.addAction(QIcon(":/symbols/folder-g.png"), "Open Directory");
         contextMenu.addAction(QIcon(":/symbols/stop-g.png"), "Stop");
@@ -110,23 +147,9 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         QAction* selectedItem = contextMenu.exec(globalPos);
         // if an action was clicked
         if(selectedItem) {
-            // search for index of download table from indexes of proxy model
-            // this is needed because the removing of rows has to be done in an index decreasing order
-            QList<int> sourceIndexes;
-            for(int i=downloadManager->numberOfDownloads()-1; i>=0; i--) {
-                int idx = sortProxyModel->mapFromSource(downloadTable->index(i, 0)).row();
-                for(int j=0; j<selectedDownloads.length(); j++) {
-                    if(idx == selectedDownloads.at(j).row()) {
-                        // a call of handleContextMenuChoice at this position isn't possible
-                        // because of the changing mapping if rows are deleted
-                        sourceIndexes.append(i);
-                        break;
-                    }
-                }
-            }
             // row index decreases with increasing array index
-            for(int i=0; i<sourceIndexes.length(); i++)
-                handleContextMenuChoice(selectedItem->text(), sourceIndexes.at(i));
+            for(int i=0; i<selectedDownloads.length(); i++)
+                handleContextMenuChoice(selectedItem->text(), selectedDownloads.at(i));
         }
     }
 }
