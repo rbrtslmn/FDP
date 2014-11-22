@@ -75,6 +75,7 @@ void MainWindow::setupTable() {
     // set up model
     downloadTable = new model::DownloadTable(downloadManager);
     sortProxyModel->setSortRole(Qt::UserRole);
+    sortProxyModel->setDynamicSortFilter(true);
     sortProxyModel->setSourceModel(downloadTable);
     ui->tableView->setModel(sortProxyModel);
     // connection before setting section size
