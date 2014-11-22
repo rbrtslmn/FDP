@@ -51,8 +51,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupConnections() {
-    connect(&timer, SIGNAL(timeout()), this, SLOT(displaySpeedSum()));
-    connect(&timer, SIGNAL(timeout()), ui->tableView->viewport(), SLOT(update()));
+    connect(&timer, SIGNAL(timeout()), this, SLOT(tickTack()));
     connect(daemon, SIGNAL(receivedLinks(QString)), this, SLOT(handleReceivedLinks(QString)));
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(handleContextMenuRequest(QPoint)));
     connect(ui->spinBox, SIGNAL(valueChanged(int)), downloadManager, SLOT(setParallelDownloads(int)));
@@ -64,6 +63,11 @@ void MainWindow::setupConnections() {
     connect(ui->checkBox_4, SIGNAL(toggled(bool)), this, SLOT(updateReloadSettings()));
     connect(ui->lineEdit, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
     connect(ui->lineEdit_2, SIGNAL(textChanged(QString)), this, SLOT(handleLoginData()));
+}
+
+void MainWindow::tickTack() {
+    displaySpeedSum();
+    downloadTable->dataChanged(downloadTable->index(0, 0), downloadTable->index(downloadManager->numberOfDownloads() - 1, 7));
 }
 
 void MainWindow::handleReceivedLinks(QString links) {
