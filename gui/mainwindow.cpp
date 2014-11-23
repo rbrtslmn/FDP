@@ -195,11 +195,17 @@ int MainWindow::getReloadSettings() {
 
 void MainWindow::displaySpeedSum() {
     float speedSum = 0;
+    int progressSum = 0;
     for(int i=0; i<downloadManager->numberOfDownloads(); i++) {
-        if(downloadManager->downloadAt(i).status == net::StatInProgress)
+        if(downloadManager->downloadAt(i).status == net::StatInProgress) {
             speedSum += downloadManager->downloadAt(i).speed;
+            progressSum++;
+        }
     }
-    ui->statusBar->showMessage(model::DownloadTable::B2String(speedSum).append("/s"));
+    ui->statusBar->showMessage(
+        tr(progressSum==1?"%1 active download: %2":"%1 active downloads: %2")
+        .arg(progressSum)
+        .arg(model::DownloadTable::B2String(speedSum).append("/s")));
 }
 
 void MainWindow::choosePath() {
