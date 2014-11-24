@@ -35,10 +35,13 @@ void DownloadManager::check4Timeout() {
             if(downloadList.at(i).timeoutProgress != downloadList.at(i).progress) {
                 downloadList[i].timeoutProgress = downloadList.at(i).progress;
                 downloadList[i].timeoutCounter = 0;
-            } else if(++downloadList[i].timeoutCounter >= 30) { // TODO: add this to the download settings
-                downloadList[i].downloader->stop(true);
-                downloadList[i].status = StatTimeout;
-                checkDownloads();
+            } else {
+                downloadList[i].speed = 0;
+                if(++downloadList[i].timeoutCounter >= 30) { // TODO: add this to the download settings
+                    downloadList[i].downloader->stop(true);
+                    downloadList[i].status = StatTimeout;
+                    checkDownloads();
+                }
             }
         }
     }
