@@ -84,6 +84,7 @@ void DownloadManager::checkDownloads() {
         }
         if(loadThis) {
             resetDownloadData(i);
+            downloadList[i].status = StatInProgress;
             startDownload(downloadList.at(i));
             canStart--;
         }
