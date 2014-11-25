@@ -71,29 +71,21 @@ void DownloadManager::setLoginData(QString username, QString password) {
 void DownloadManager::checkDownloads() {
     int canStart = parallelDownloads - numberOfDownloads(StatInProgress);
     for(int i=0; i<downloadList.length() && canStart>0; i++) {
-        bool reloadThis = false;
-        // reloading failed parts at occurence
-        if((reloadSettings &  gui::ReloadAfterRest) == 0) {
-            if(shouldReload(i))
-                reloadThis = true;
+        bool loadThis = false;
+        // normal pending file
+        if(downloadList.at(i).status == StatPending) {
+            loadThis = true;
+        // reload failed parts at occurence
+        } else if(!(reloadSettings &  gui::ReloadAfterRest) && shouldReload(i)) {
+            loadThis = true;
+        // reload failed parts when rest finished
+        } else if(numberOfDownloads(StatPending) == 0 && shouldReload(i)) {
+            loadThis = true;
         }
-        // start pending
-        if(downloadList.at(i).status == StatPending)
-            reloadThis = true;
-        if(reloadThis) {
+        if(loadThis) {
+            resetDownloadData(i);
             startDownload(downloadList.at(i));
-            downloadList[i].status = StatInProgress;
             canStart--;
-        }
-    }
-    // reloading failed parts when rest finished
-    for(int i=0; i<downloadList.length() && canStart>0; i++) {
-        if(reloadSettings & gui::ReloadAfterRest) {
-            if(shouldReload(i)) {
-                startDownload(downloadList.at(i));
-                downloadList[i].status = StatInProgress;
-                canStart--;
-            }
         }
     }
 }
@@ -281,13 +273,19 @@ void DownloadManager::stopDownload(int i) {
     checkDownloads();
 }
 
-void DownloadManager::restartDownload(int i) {
+void DownloadManager::resetDownloadData(int i) {
     downloadList[i].downloader->stop(false);
-    downloadList[i].status = StatPending;
     downloadList[i].error = "";
     downloadList[i].progress = 0;
+    downloadList[i].size = 0; // because this could be an error file
+    downloadList[i].speed = 0;
+    downloadList[i].status = StatPending;
     downloadList[i].timeoutCounter = 0;
     downloadList[i].timeoutProgress = 0;
+}
+
+void DownloadManager::restartDownload(int i) {
+    resetDownloadData(i);
     checkDownloads();
 }
 

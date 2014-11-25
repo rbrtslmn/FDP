@@ -55,6 +55,7 @@ protected:
     QString getDownloadsFile();
     void addDownloadFromJson(QJsonObject obj);
     QJsonObject download2Json(int idx);
+    void resetDownloadData(int i);
 
 protected:
     QList<DownloadInformation> downloadList;
