@@ -156,7 +156,7 @@ void DownloadManager::handleDownloadFinished() {
                     downloadList[i].status = StatFileOffline;
                 else if(downloadList[i].error.contains("Ungültiger Login"))
                     downloadList[i].status = StatLoginError;
-                // free-way.me made a type here:
+                // free-way.me made a typo here:
                 // "Ungütiger Hoster" should be "Ungültiger Hoster"
                 // in case they fix this FDP should check for both strings
                 else if(downloadList[i].error.contains(QRegExp("Ungül?tiger Hoster")))
