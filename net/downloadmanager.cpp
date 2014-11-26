@@ -162,6 +162,8 @@ void DownloadManager::handleDownloadFinished() {
                 // in case they fix this FDP should check for both strings
                 else if(downloadList[i].error.contains(QRegExp("Ungül?tiger Hoster")))
                     downloadList[i].status = StatInvalidUrl;
+                else if(downloadList[i].error.contains("No more traffic for this host"))
+                    downloadList[i].status = StatNoTraffic;
                 else
                     downloadList[i].status = StatFWError;
             }

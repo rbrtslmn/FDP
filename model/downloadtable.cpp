@@ -228,6 +228,8 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
         return "Aborted";
     case net::StatInvalidUrl:
         return "Invalid URL";
+    case net::StatNoTraffic:
+        return "No More Traffic";
     }
     return "Unknown";
 }

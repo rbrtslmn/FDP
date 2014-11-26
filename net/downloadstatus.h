@@ -11,10 +11,11 @@ enum DownloadStatus {
     StatFWError =     0x04,
     StatError =       0x05,
     StatAborted =     0x06,
-    StatFileOffline = 0x07,
-    StatInvalidUrl =  0x08,
-    StatLoginError =  0x09,
-    StatFinished =    0x0a,
+    StatNoTraffic =   0x07,
+    StatFileOffline = 0x08,
+    StatInvalidUrl =  0x09,
+    StatLoginError =  0x0a,
+    StatFinished =    0x0b,
 };
 
 } // end of namespace net
