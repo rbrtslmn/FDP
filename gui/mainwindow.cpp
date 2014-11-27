@@ -152,6 +152,18 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         // if an action was clicked
         if(selectedItem) {
             QStringList directories;
+            if(selectedItem->text() != "Open Directory") {
+                bool onlyFin = true;
+                for(int i=0; i<selectedDownloads.length(); i++) {
+                    if(downloadManager->downloadAt(i).status != net::StatFinished)
+                        onlyFin = false;
+                }
+                if(!onlyFin
+                && QMessageBox::warning(this, "Not finished",
+                                        "Not all selected downloads are finished yet. Are you sure?",
+                                        QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+                    return;
+            }
             // row index decreases with increasing array index
             for(int i=0; i<selectedDownloads.length(); i++) {
                 if(selectedItem->text() == "Open Directory") {
