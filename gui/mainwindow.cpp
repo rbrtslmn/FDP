@@ -151,17 +151,22 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         QAction* selectedItem = contextMenu.exec(globalPos);
         // if an action was clicked
         if(selectedItem) {
+            QStringList directories;
             // row index decreases with increasing array index
-            for(int i=0; i<selectedDownloads.length(); i++)
-                handleContextMenuChoice(selectedItem->text(), selectedDownloads.at(i));
+            for(int i=0; i<selectedDownloads.length(); i++) {
+                if(selectedItem->text() == "Open Directory") {
+                    if(!directories.contains(downloadManager->downloadAt(selectedDownloads.at(i)).path))
+                        directories.append(downloadManager->downloadAt(selectedDownloads.at(i)).path);
+                } else handleContextMenuChoice(selectedItem->text(), selectedDownloads.at(i));
+            }
+            for(int i=0; i<directories.length(); i++)
+                QDesktopServices::openUrl(directories.at(i));
         }
     }
 }
 
 void MainWindow::handleContextMenuChoice(QString text, int i) {
-    if(text == "Open Directory") {
-        QDesktopServices::openUrl(downloadManager->downloadAt(i).path);
-    } else if(text == "Stop") {
+    if(text == "Stop") {
         downloadManager->stopDownload(i);
     } else if(text == "Restart") {
         downloadManager->restartDownload(i);
