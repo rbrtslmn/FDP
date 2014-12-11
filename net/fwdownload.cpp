@@ -106,7 +106,14 @@ QString FWDownload::headerFilename() {
     QString returnValue = download->rawHeader("Content-Disposition");
     int idx = returnValue.indexOf(QRegExp("filename=\".*\""));
     if(idx != -1)
-        returnValue = returnValue.mid(idx).split("\"")[1];
+        returnValue = QUrl::fromPercentEncoding(returnValue.mid(idx).split("\"")[1].toLatin1());
+    else {
+        int idx = returnValue.indexOf("''");
+        if(idx != -1)
+            returnValue = QUrl::fromPercentEncoding(returnValue.mid(idx+2).toLatin1());
+        else
+            returnValue = "";
+    }
     return returnValue;
 }
 

@@ -80,7 +80,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         if(keyEvent->key() == Qt::Key_Delete) {
             QList<int> selection = descendingTableSelection();
-            // TODO: add asking
+            // TODO: handle this via the context menu function -> also a question for not finished downloads
             for(int i=0; i<selection.length(); i++) {
                 downloadTable->beginDelete(selection.at(i));
                 downloadManager->deleteDownload(selection.at(i));
