@@ -102,17 +102,22 @@ void HTTPDaemon::handleRequest(const QString request, QTcpSocket *client) {
     if(request.contains(QRegExp("GET /?flash/? ")))
         client->write(generateHTTPResponse("JDownloader").toLatin1());
     // running request (js)
-    if(request.contains(QRegExp("GET /?jdcheck.js ")))
+    else if(request.contains(QRegExp("GET /?jdcheck.js ")))
         client->write(generateHTTPResponse("jdownloader=true;").toLatin1());
+    // running request (crossdomain.xml)
+    else if(request.contains(QRegExp("GET /?crossdomain.xml "))) {
+        QString cdf = "<?xml version=\"1.0\"?> <cross-domain-policy> <allow-access-from domain=\"*\" /> </cross-domain-policy>";
+        client->write(generateHTTPResponse(cdf).toLatin1());
+    }
     // link post (encrypted)
-    if(request.contains(QRegExp("POST /?flash/addcrypted2/? "))) {
+    else if(request.contains(QRegExp("POST /?flash/addcrypted2/? "))) {
         if(parseEncryptedLinks(request))
             client->write(generateHTTPResponse("success").toLatin1());
         else
             client->write(generateHTTPResponse("fail").toLatin1());
     }
     // link post (plain)
-    if(request.contains(QRegExp("POST /?flash/add/? "))) {
+    else if(request.contains(QRegExp("POST /?flash/add/? "))) {
         if(parsePlainLinks(request))
             client->write(generateHTTPResponse("success").toLatin1());
         else
