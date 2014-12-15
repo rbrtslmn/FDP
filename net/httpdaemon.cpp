@@ -99,7 +99,7 @@ void HTTPDaemon::handleConnectionData() {
 
 void HTTPDaemon::handleRequest(const QString request, QTcpSocket *client) {
     // running request (flash)
-    if(request.contains(QRegExp("GET /?flash/? ")))
+    if(request.contains(QRegExp("GET /?flash.* ")))
         client->write(generateHTTPResponse("JDownloader").toLatin1());
     // running request (js)
     else if(request.contains(QRegExp("GET /?jdcheck.js ")))
