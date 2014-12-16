@@ -281,13 +281,14 @@ void DownloadManager::resetDownloadData(int i) {
 }
 
 void DownloadManager::restartDownload(int i) {
+    downloadList[i].downloader->stop(); // delete old file TODO: ask if the file exists
     resetDownloadData(i);
     checkDownloads();
 }
 
 void DownloadManager::deleteDownload(int i) {
     if(downloadList[i].status == StatInProgress)
-    downloadList[i].downloader->stop();
+        downloadList[i].downloader->stop();
     delete downloadList[i].downloader;
     downloadList.removeAt(i);
 }

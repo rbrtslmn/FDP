@@ -137,8 +137,8 @@ void FWDownload::stop() {
 }
 
 void FWDownload::stopDownload() {
-    download->abort();
     download->disconnect();
+    download->abort();
 }
 
 void FWDownload::handleError() {
