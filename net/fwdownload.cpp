@@ -103,17 +103,20 @@ void FWDownload::handleError() {
 }
 
 QString FWDownload::headerFilename() {
+    // get the content disposition header
     QString returnValue = download->rawHeader("Content-Disposition");
-    int idx = returnValue.indexOf(QRegExp("filename=\".*\""));
-    if(idx != -1)
-        returnValue = QUrl::fromPercentEncoding(returnValue.mid(idx).split("\"")[1].toLatin1());
-    else {
-        int idx = returnValue.indexOf("''");
-        if(idx != -1)
-            returnValue = QUrl::fromPercentEncoding(returnValue.mid(idx+2).toLatin1());
-        else
-            returnValue = "";
-    }
+    if(returnValue.isEmpty()) return "";
+    // get the filename part
+    int idx = returnValue.indexOf(QRegExp("filename\\*?=", Qt::CaseInsensitive));
+    if(idx == -1) return "";
+    returnValue = returnValue.mid(returnValue.indexOf("=", idx) + 1).trimmed();
+    // Content-Disposition: INLINE; FILENAME= "an example.html"
+    if(returnValue.contains(QRegExp("\".*\"")))
+        return returnValue.split('"')[1];
+    // Content-Disposition: attachment; filename*= UTF-8''%e2%82%ac%20rates
+    if(returnValue.contains("''"))
+        return QUrl::fromPercentEncoding(returnValue.mid(returnValue.indexOf("''") + 2).toLatin1());
+    // Content-Disposition: Attachment; filename=example.html
     return returnValue;
 }
 
