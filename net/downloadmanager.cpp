@@ -8,7 +8,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QApplication>
-#include <QTextDocument>
 
 namespace fdp {
 namespace net {
@@ -38,7 +37,7 @@ void DownloadManager::check4Timeout() {
             } else {
                 downloadList[i].speed = 0;
                 if(++downloadList[i].timeoutCounter >= 30) { // TODO: add this to the download settings
-                    downloadList[i].downloader->stop(true);
+                    downloadList[i].downloader->stop();
                     downloadList[i].status = StatTimeout;
                     checkDownloads();
                 }
@@ -110,9 +109,34 @@ void DownloadManager::startDownload(const DownloadInformation downloadInformatio
     connect(downloadInformation.downloader, SIGNAL(finished()), this, SLOT(handleDownloadFinished()));
     connect(downloadInformation.downloader, SIGNAL(receivedFilename(QString)), this, SLOT(handleDownloadFilename(QString)));
     connect(downloadInformation.downloader, SIGNAL(receivedSize(qint64)), this, SLOT(handleDownloadSize(qint64)));
+    connect(downloadInformation.downloader, SIGNAL(receivedStat(QString)), this, SLOT(handleDownloadStat(QString)));
     downloadInformation.downloader->start(
         LinkGenerator::GenerateFWLink(loginData.username, loginData.password, downloadInformation.url),
         downloadInformation.path);
+}
+
+void DownloadManager::handleDownloadStat(QString status) {
+    for(int i=0; i<downloadList.length(); i++) {
+        if(downloadList[i].downloader == sender()) {
+            downloadList[i].downloader->disconnect();
+            downloadList[i].speed = 0;
+            downloadList[i].error = status;
+            if(downloadList[i].error.contains("File offline"))
+                downloadList[i].status = StatFileOffline;
+            else if(downloadList[i].error.contains("Ungültiger Login"))
+                downloadList[i].status = StatLoginError;
+            // free-way.me made a typo here:
+            // "Ungütiger Hoster" should be "Ungültiger Hoster"
+            // in case they fix this FDP should check for both strings
+            else if(downloadList[i].error.contains(QRegExp("Ungül?tiger Hoster")))
+                downloadList[i].status = StatInvalidUrl;
+            else if(downloadList[i].error.contains("No more traffic for this host"))
+                downloadList[i].status = StatNoTraffic;
+            else
+                downloadList[i].status = StatFWError;
+            break;
+        }
+    }
 }
 
 void DownloadManager::handleDownloadError(QString msg) {
@@ -128,45 +152,12 @@ void DownloadManager::handleDownloadError(QString msg) {
     checkDownloads();
 }
 
-void DownloadManager::parseErrorMessage(int i) {
-    QFile file(downloadList[i].path + downloadList[i].file);
-    if(file.open(QIODevice::ReadOnly)) {
-        QString content = file.readAll();
-        file.close();
-        QRegExp regExp("<p id='error'>.*</p>");
-        if(regExp.indexIn(content) != -1) {
-            QString err = regExp.capturedTexts()[0].mid(14);
-            err = err.left(err.indexOf("</p>"));
-            QTextDocument text;
-            text.setHtml(err);
-            downloadList[i].error = text.toPlainText();
-        }
-    }
-}
-
 void DownloadManager::handleDownloadFinished() {
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].downloader == sender()) {
             downloadList[i].downloader->disconnect();
             downloadList[i].speed = 0;
             downloadList[i].status = StatFinished;
-            // free-way.me error
-            if(downloadList[i].file.startsWith("unnamed") && downloadList[i].size < 1024) {
-                parseErrorMessage(i);
-                if(downloadList[i].error.contains("File offline"))
-                    downloadList[i].status = StatFileOffline;
-                else if(downloadList[i].error.contains("Ungültiger Login"))
-                    downloadList[i].status = StatLoginError;
-                // free-way.me made a typo here:
-                // "Ungütiger Hoster" should be "Ungültiger Hoster"
-                // in case they fix this FDP should check for both strings
-                else if(downloadList[i].error.contains(QRegExp("Ungül?tiger Hoster")))
-                    downloadList[i].status = StatInvalidUrl;
-                else if(downloadList[i].error.contains("No more traffic for this host"))
-                    downloadList[i].status = StatNoTraffic;
-                else
-                    downloadList[i].status = StatFWError;
-            }
             break;
         }
     }
@@ -232,8 +223,8 @@ int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
 DownloadManager::~DownloadManager() {
     saveDownloads();
     for(int i=0; i<downloadList.length(); i++) {
-        downloadList[i].downloader->stop(false);
-        // delete downloadList[i].downloader; // causes crashes on windows
+        if(downloadList[i].status == StatInProgress)
+            downloadList[i].downloader->stop(); // TODO: delete object
     }
 }
 
@@ -271,13 +262,15 @@ void DownloadManager::saveDownloads() {
 }
 
 void DownloadManager::stopDownload(int i) {
-    downloadList[i].downloader->stop(false);
+    if(downloadList[i].status == StatInProgress)
+        downloadList[i].downloader->stop();
     downloadList[i].status = StatAborted;
     checkDownloads();
 }
 
 void DownloadManager::resetDownloadData(int i) {
-    downloadList[i].downloader->stop(false);
+    if(downloadList[i].status == StatInProgress)
+        downloadList[i].downloader->stop();
     downloadList[i].error = "";
     downloadList[i].progress = 0;
     downloadList[i].size = 0; // because this could be an error file
@@ -293,7 +286,8 @@ void DownloadManager::restartDownload(int i) {
 }
 
 void DownloadManager::deleteDownload(int i) {
-    downloadList[i].downloader->stop(false);
+    if(downloadList[i].status == StatInProgress)
+    downloadList[i].downloader->stop();
     delete downloadList[i].downloader;
     downloadList.removeAt(i);
 }

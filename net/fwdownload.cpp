@@ -2,6 +2,7 @@
 
 #include <QNetworkReply>
 #include <QFileInfo>
+#include <QTextDocument>
 
 namespace fdp {
 namespace net {
@@ -23,9 +24,10 @@ void FWDownload::start(const QString url, const QString path) {
     this->path = path;
     if(!this->path.endsWith("/"))
         this->path += "/";
-    // reset download speed info
+    // reset download info
     lastSpeedCheck = QDateTime::currentDateTime();
     lastProgress = 0;
+    inProgress = false;
     // send request
     request = QNetworkRequest(url);
     download = naManager->get(request);
@@ -38,34 +40,77 @@ void FWDownload::start(const QString url, const QString path) {
 }
 
 void FWDownload::handleData() {
-    // open file
-    if(!output.isOpen()) {
-        // error while opening
-        if(!openFile()) {
-            stopDownload();
-            return;
-        // emit filename and size
-        } else {
-            emit receivedFilename(QFileInfo(output).fileName());
+    // first data -> check for filename
+    if(!inProgress) {
+        filename = headerFilename();
+        // read valid filename
+        if(!filename.isEmpty()) {
+            // file info
+            emit receivedFilename(filename);
             emit receivedSize(headerSize());
+            // file exists?
+            file.setFileName(tr("%1%2").arg(path).arg(filename));
+            if(file.exists()) {
+                stopDownload();
+                emit error(tr("File \"%1%2\" exists").arg(path).arg(filename));
+                return;
+            }
+            // couldn't open file
+            if(!file.open(QIODevice::WriteOnly)) {
+                stopDownload();
+                emit error(tr("couln't open \"%1%2\" for writing").arg(path).arg(filename));
+                return;
+            }
+        // no filename found in header
+        } else {
+            // not a status message
+            if(headerSize() > 1024) {
+                stopDownload();
+                emit error("No filename found in content disposition header");
+                return;
+            } else buffer = "";
         }
+        inProgress = true;
     }
-    // write to file
-    while(download->bytesAvailable()) {
-        output.write(download->readAll());
+    // write data to file
+    if(!filename.isEmpty()) {
+        file.write(download->readAll());
+    // buffer data
+    } else {
+        buffer.append(download->readAll());
+    }
+}
+
+QString FWDownload::parseStatus() {
+    QRegExp regExp("<p id='error'>.*</p>");
+    if(regExp.indexIn(buffer) != -1) {
+        QString err = regExp.capturedTexts()[0].mid(14);
+        err = err.left(err.indexOf("</p>"));
+        QTextDocument text;
+        text.setHtml(err);
+        return text.toPlainText();
+    } else {
+        return "Couldn't parse Free-Way.me status";
     }
 }
 
 void FWDownload::handleFinish() {
-    if(output.isOpen())
-        output.close();
+    // close file
+    if(file.isOpen())
+        file.close();
     // check redirect
     int statusCode = download->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if(statusCode == 302) {
         QUrl url = download->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
         download->disconnect();
         start(url.toString(), path);
-    } else emit finished();
+    // buffered data
+    } else if(filename.isEmpty()) {
+        emit receivedStat(parseStatus());
+    // file finished
+    } else {
+        emit finished();
+    }
 }
 
 void FWDownload::handleProgress(qint64 curr, qint64 size) {
@@ -81,14 +126,13 @@ void FWDownload::handleProgress(qint64 curr, qint64 size) {
     emit progress(curr, size);
 }
 
-void FWDownload::stop(bool deleteFile) {
-    // if download is running
-    if(download != NULL) {
+void FWDownload::stop() {
+    if(download != NULL)
         stopDownload();
-        if(output.isOpen())
-            output.close();
-        if(deleteFile)
-            output.remove();
+    if(!filename.isEmpty()) {
+        if(file.isOpen())
+            file.close();
+        file.remove();
     }
 }
 
@@ -99,7 +143,7 @@ void FWDownload::stopDownload() {
 
 void FWDownload::handleError() {
     emit error(download->errorString());
-    stop(false);
+    stop();
 }
 
 QString FWDownload::headerFilename() {
@@ -113,6 +157,9 @@ QString FWDownload::headerFilename() {
     // Content-Disposition: INLINE; FILENAME= "an example.html"
     if(returnValue.contains(QRegExp("\".*\"")))
         return returnValue.split('"')[1];
+    // check if there is a following disposition-parm
+    if(returnValue.contains(";"))
+        returnValue = returnValue.mid(0, returnValue.indexOf(";")).trimmed();
     // Content-Disposition: attachment; filename*= UTF-8''%e2%82%ac%20rates
     if(returnValue.contains("''"))
         return QUrl::fromPercentEncoding(returnValue.mid(returnValue.indexOf("''") + 2).toLatin1());
@@ -120,29 +167,9 @@ QString FWDownload::headerFilename() {
     return returnValue;
 }
 
-QString FWDownload::alternativeFilename() {
-    int idx = 0;
-    while(QFile(tr("%1unnamed-%2").arg(path).arg(idx)).exists())
-        idx++;
-    return tr("unnamed-%1").arg(idx);
-}
-
 qint64 FWDownload::headerSize() {
     QString sizeString = download->rawHeader("Content-Length");
     return sizeString.toLongLong();
-}
-
-bool FWDownload::openFile() {
-    // get filename
-    QString filename = headerFilename();
-    if(filename.isEmpty())
-        filename = alternativeFilename();
-    // try to open it
-    output.setFileName(tr("%1%2").arg(path).arg(filename));
-    if (!output.open(QIODevice::WriteOnly)) {
-        emit error(tr("couln't open \"%1%2\" for writing").arg(path).arg(filename));
-        return false;
-    } else return true;
 }
 
 } // end of namespace net

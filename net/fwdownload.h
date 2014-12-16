@@ -17,7 +17,7 @@ public:
     FWDownload();
     ~FWDownload();
     void start(const QString url, const QString path);
-    void stop(bool deleteFile);
+    void stop();
 
 signals:
     void speed(float Bps);
@@ -26,6 +26,7 @@ signals:
     void error(QString message);
     void receivedFilename(QString filename);
     void receivedSize(qint64 size);
+    void receivedStat(QString status);
 
 protected slots:
     void handleProgress(qint64 curr, qint64 size);
@@ -35,21 +36,26 @@ protected slots:
 
 protected:
     void stopDownload();
-    bool openFile();
     QString headerFilename();
-    QString alternativeFilename();
     qint64 headerSize();
+    QString parseStatus();
 
 protected:
-    QString path;
+    // download info
     QString url;
+    QString path;
+    QString filename;
+    // download file/buffer
+    QFile file;
+    QByteArray buffer;
+
+    bool inProgress;
     QNetworkAccessManager *naManager;
     QNetworkReply *download;
     QNetworkRequest request;
     QDateTime lastSpeedCheck;
     qint64 lastProgress;
     int speedIntervalMs;
-    QFile output;
 
 };
 

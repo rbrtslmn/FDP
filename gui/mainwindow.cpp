@@ -181,7 +181,7 @@ void MainWindow::handleContextMenuChoice(QString text, int i) {
     if(text == "Stop") {
         downloadManager->stopDownload(i);
     } else if(text == "Restart") {
-        downloadManager->restartDownload(i);
+        downloadManager->restartDownload(i); // TODO: delete file?
     } else if(text == "Delete") {
         downloadTable->beginDelete(i);
         downloadManager->deleteDownload(i);

@@ -217,7 +217,7 @@ QString DownloadTable::DownloadStatus2String(net::DownloadStatus status) {
     case net::StatPending:
         return "Pending";
     case net::StatFWError:
-        return "Free-Way.me Error";
+        return "FW Error";
     case net::StatTimeout:
         return "Timeout";
     case net::StatFileOffline:
