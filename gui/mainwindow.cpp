@@ -79,12 +79,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         if(keyEvent->key() == Qt::Key_Delete) {
-            QList<int> selection = descendingTableSelection();
-            // TODO: handle this via the context menu function -> also a question for not finished downloads
-            for(int i=0; i<selection.length(); i++) {
-                downloadTable->beginDelete(selection.at(i));
-                downloadManager->deleteDownload(selection.at(i));
-                downloadTable->endDelete();
+            if(sureDelete()) {
+                QList<int> selection = descendingTableSelection();
+                for(int i=0; i<selection.length(); i++)
+                    handleContextMenuChoice("Delete", selection.at(i));
             }
             return true;
         }
@@ -138,6 +136,34 @@ void MainWindow::handleSectionResize(int idx, int oldWidth, int newWidth) {
         downloadTable->setProgressColumnWidth(newWidth);
 }
 
+bool MainWindow::sureDelete() {
+    QList<int> selectedDownloads = descendingTableSelection();
+    for(int i=0; i<selectedDownloads.length(); i++) {
+        net::DownloadStatus status = downloadManager->downloadAt(selectedDownloads.at(i)).status;
+        if(status == net::StatPending || status == net::StatAbout2Start || status == net::StatInProgress) {
+            int choice = QMessageBox::warning(this, "Are you sure?",
+                "One or more selected downloads are not finished yet.\n"
+                "Delete anyway?", QMessageBox::Yes, QMessageBox::No);
+            return choice == QMessageBox::Yes;
+        }
+    }
+    return true;
+}
+
+bool MainWindow::sureRestart() {
+    QList<int> selectedDownloads = descendingTableSelection();
+    for(int i=0; i<selectedDownloads.length(); i++) {
+        net::DownloadInformation info = downloadManager->downloadAt(selectedDownloads.at(i));
+        if(!info.file.isEmpty() && QFile(tr("%1%2").arg(info.path).arg(info.file)).exists()) {
+            int choice = QMessageBox::warning(this, "Are you sure?",
+                "For one or more selected downloads there already exist files.\n"
+                "Delete files and restart anyway?", QMessageBox::Yes, QMessageBox::No);
+            return choice == QMessageBox::Yes;
+        }
+    }
+    return true;
+}
+
 void MainWindow::handleContextMenuRequest(const QPoint &pos) {
     QPoint globalPos = ui->tableView->viewport()->mapToGlobal(pos);
     QList<int> selectedDownloads = descendingTableSelection();
@@ -151,19 +177,13 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
         QAction* selectedItem = contextMenu.exec(globalPos);
         // if an action was clicked
         if(selectedItem) {
+            // ask before deleting downloads
+            if(selectedItem->text() == "Delete" && !sureDelete())
+                return;
+            // ask before restarting downloads
+            if(selectedItem->text() == "Restart" && !sureRestart())
+                return;
             QStringList directories;
-            if(selectedItem->text() != "Open Directory") {
-                bool onlyFin = true;
-                for(int i=0; i<selectedDownloads.length(); i++) {
-                    if(downloadManager->downloadAt(i).status != net::StatFinished)
-                        onlyFin = false;
-                }
-                if(!onlyFin
-                && QMessageBox::warning(this, "Not finished",
-                                        "Not all selected downloads are finished yet. Are you sure?",
-                                        QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
-                    return;
-            }
             // row index decreases with increasing array index
             for(int i=0; i<selectedDownloads.length(); i++) {
                 if(selectedItem->text() == "Open Directory") {
@@ -171,6 +191,7 @@ void MainWindow::handleContextMenuRequest(const QPoint &pos) {
                         directories.append(downloadManager->downloadAt(selectedDownloads.at(i)).path);
                 } else handleContextMenuChoice(selectedItem->text(), selectedDownloads.at(i));
             }
+            // open directories
             for(int i=0; i<directories.length(); i++)
                 QDesktopServices::openUrl(directories.at(i));
         }
@@ -181,7 +202,7 @@ void MainWindow::handleContextMenuChoice(QString text, int i) {
     if(text == "Stop") {
         downloadManager->stopDownload(i);
     } else if(text == "Restart") {
-        downloadManager->restartDownload(i); // TODO: delete file?
+        downloadManager->restartDownload(i);
     } else if(text == "Delete") {
         downloadTable->beginDelete(i);
         downloadManager->deleteDownload(i);

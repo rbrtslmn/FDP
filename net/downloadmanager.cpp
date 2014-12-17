@@ -68,23 +68,28 @@ void DownloadManager::setLoginData(QString username, QString password) {
 }
 
 void DownloadManager::checkDownloads() {
-    int canStart = parallelDownloads - numberOfDownloads(StatInProgress);
+    int canStart = parallelDownloads - numberOfDownloads(StatInProgress) - numberOfDownloads(StatAbout2Start);
     for(int i=0; i<downloadList.length() && canStart>0; i++) {
         bool loadThis = false;
+        bool delay = false;
         // normal pending file
         if(downloadList.at(i).status == StatPending) {
             loadThis = true;
         // reload failed parts at occurence
-        } else if(!(reloadSettings &  gui::ReloadAfterRest) && shouldReload(i)) {
-            loadThis = true;
-        // reload failed parts when rest finished
-        } else if(numberOfDownloads(StatPending) == 0 && shouldReload(i)) {
-            loadThis = true;
+        } else {
+            delay = true;
+            if(!(reloadSettings &  gui::ReloadAfterRest) && shouldReload(i)) {
+                loadThis = true;
+            // reload failed parts when rest finished
+            } else if(numberOfDownloads(StatPending) == 0 && shouldReload(i)) {
+                loadThis = true;
+            }
         }
         if(loadThis) {
-            resetDownloadData(i);
-            downloadList[i].status = StatInProgress;
-            startDownload(downloadList.at(i));
+            if(delay) {
+                // TODO: start with delay
+            }
+            startDownload(i);
             canStart--;
         }
     }
@@ -102,7 +107,10 @@ void DownloadManager::setParallelDownloads(int parallelDownloads) {
 }
 
 // TODO: check empty password
-void DownloadManager::startDownload(const DownloadInformation downloadInformation) {
+void DownloadManager::startDownload(int i) {
+    DownloadInformation downloadInformation = downloadList.at(i);
+    resetDownloadData(i);
+    downloadList[i].status = StatInProgress;
     connect(downloadInformation.downloader, SIGNAL(progress(qint64,qint64)), this, SLOT(handleDownloadProgress(qint64,qint64)));
     connect(downloadInformation.downloader, SIGNAL(speed(float)), this, SLOT(handleDownloadSpeed(float)));
     connect(downloadInformation.downloader, SIGNAL(error(QString)), this, SLOT(handleDownloadError(QString)));
@@ -281,7 +289,7 @@ void DownloadManager::resetDownloadData(int i) {
 }
 
 void DownloadManager::restartDownload(int i) {
-    downloadList[i].downloader->stop(); // delete old file TODO: ask if the file exists
+    downloadList[i].downloader->stop(); // delete old file
     resetDownloadData(i);
     checkDownloads();
 }

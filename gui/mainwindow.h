@@ -50,6 +50,8 @@ protected:
     void handleContextMenuChoice(QString text, int i);
     bool eventFilter(QObject *obj, QEvent *event);
     QList<int> descendingTableSelection();
+    bool sureDelete();
+    bool sureRestart();
 
 protected:
     Ui::MainWindow *ui;

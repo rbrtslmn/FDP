@@ -48,7 +48,7 @@ protected slots:
     void check4Timeout();
 
 protected:
-    void startDownload(const DownloadInformation downloadInformation);
+    void startDownload(int i);
     bool shouldReload(const int i);
     void saveDownloads();
     void loadDownloads();
