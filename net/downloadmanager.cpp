@@ -149,6 +149,7 @@ void DownloadManager::handleDownloadStat(QString status) {
             break;
         }
     }
+    checkDownloads();
 }
 
 void DownloadManager::handleDownloadError(QString msg) {
