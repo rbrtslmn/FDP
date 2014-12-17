@@ -19,7 +19,8 @@ SOURCES += \
     net/httpdaemon.cpp \
     net/linkgenerator.cpp \
     net/fwdownload.cpp \
-    net/downloadmanager.cpp
+    net/downloadmanager.cpp \
+    net/timerintproxy.cpp
 
 HEADERS  += \
     gui/mainwindow.h \
@@ -33,7 +34,8 @@ HEADERS  += \
     net/downloadstatus.h \
     net/downloadinformation.h \
     net/logindata.h \
-    model/downloadtablecolumns.h
+    model/downloadtablecolumns.h \
+    net/timerintproxy.h
 
 FORMS    += \
     gui/mainwindow.ui

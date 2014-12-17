@@ -145,7 +145,8 @@ QVariant DownloadTable::dataDecorationRole(const QModelIndex &index) const {
         if(downloadManager->downloadAt(index.row()).status == net::StatAborted)
             return QVariant(QColor(255, 163, 100));
         // pending downloads
-        if(downloadManager->downloadAt(index.row()).status == net::StatPending)
+        if(downloadManager->downloadAt(index.row()).status == net::StatPending
+        || downloadManager->downloadAt(index.row()).status == net::StatAbout2Start)
             return QVariant(QColor(100, 100, 255));
         if(downloadManager->downloadAt(index.row()).status == net::StatInProgress) {
             return QVariant(interpolateProgressColor(index.row()));

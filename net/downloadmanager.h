@@ -46,9 +46,9 @@ protected slots:
     void handleDownloadSize(qint64 size);
     void handleDownloadStat(QString status);
     void check4Timeout();
+    void startDownload(int i);
 
 protected:
-    void startDownload(int i);
     bool shouldReload(const int i);
     void saveDownloads();
     void loadDownloads();

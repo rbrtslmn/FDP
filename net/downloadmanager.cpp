@@ -1,4 +1,5 @@
 #include "downloadmanager.h"
+#include "timerintproxy.h"
 
 #include <gui/reloadsettings.h>
 
@@ -75,9 +76,9 @@ void DownloadManager::checkDownloads() {
         // normal pending file
         if(downloadList.at(i).status == StatPending) {
             loadThis = true;
-        // reload failed parts at occurence
         } else {
             delay = true;
+            // reload failed parts at occurence
             if(!(reloadSettings &  gui::ReloadAfterRest) && shouldReload(i)) {
                 loadThis = true;
             // reload failed parts when rest finished
@@ -85,11 +86,14 @@ void DownloadManager::checkDownloads() {
                 loadThis = true;
             }
         }
+        // current file can be started
         if(loadThis) {
             if(delay) {
-                // TODO: start with delay
+                downloadList[i].status = StatAbout2Start;
+                TimerIntProxy::SingleShot(3000, i, this, SLOT(startDownload(int)));
+            } else {
+                startDownload(i);
             }
-            startDownload(i);
             canStart--;
         }
     }
@@ -232,7 +236,8 @@ DownloadManager::~DownloadManager() {
     saveDownloads();
     for(int i=0; i<downloadList.length(); i++) {
         if(downloadList[i].status == StatInProgress)
-            downloadList[i].downloader->stop(); // TODO: delete object
+            downloadList[i].downloader->stop();
+        downloadList[i].downloader->deleteLater();
     }
 }
 

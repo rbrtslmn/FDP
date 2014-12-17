@@ -120,8 +120,6 @@ QList<int> MainWindow::descendingTableSelection() {
         int idx = sortProxyModel->mapFromSource(downloadTable->index(i, 0)).row();
         for(int j=0; j<selectedDownloads.length(); j++) {
             if(idx == selectedDownloads.at(j).row()) {
-                // a call of handleContextMenuChoice at this position isn't possible
-                // because of the changing mapping if rows are deleted
                 returnValue.append(i);
                 break;
             }
@@ -143,7 +141,7 @@ bool MainWindow::sureDelete() {
         if(status == net::StatPending || status == net::StatAbout2Start || status == net::StatInProgress) {
             int choice = QMessageBox::warning(this, "Are you sure?",
                 "One or more selected downloads are not finished yet.\n"
-                "Delete anyway?", QMessageBox::Yes, QMessageBox::No);
+                "Delete downloads anyway?", QMessageBox::Yes, QMessageBox::No);
             return choice == QMessageBox::Yes;
         }
     }
@@ -157,7 +155,7 @@ bool MainWindow::sureRestart() {
         if(!info.file.isEmpty() && QFile(tr("%1%2").arg(info.path).arg(info.file)).exists()) {
             int choice = QMessageBox::warning(this, "Are you sure?",
                 "For one or more selected downloads there already exist files.\n"
-                "Delete files and restart anyway?", QMessageBox::Yes, QMessageBox::No);
+                "Delete files and restart downloads anyway?", QMessageBox::Yes, QMessageBox::No);
             return choice == QMessageBox::Yes;
         }
     }
@@ -328,6 +326,8 @@ void MainWindow::loadSettings() {
         ui->comboBox->setCurrentIndex(settings.value("reloadorder").toInt());
         // window size
         resize(settings.value("width").toInt(), settings.value("height").toInt());
+    } else {
+        downloadTable->setProgressColumnWidth(ui->tableView->horizontalHeader()->sectionSize(3));
     }
 }
 
