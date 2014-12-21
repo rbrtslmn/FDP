@@ -37,6 +37,14 @@ HEADERS  += \
     model/downloadtablecolumns.h \
     net/timerintproxy.h
 
+unix {
+    SOURCES += \
+        signal/unixsignallistener.cpp
+
+    HEADERS += \
+        signal/unixsignallistener.h
+}
+
 FORMS    += \
     gui/mainwindow.ui
 
