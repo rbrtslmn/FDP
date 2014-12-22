@@ -236,7 +236,7 @@ int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
 DownloadManager::~DownloadManager() {
     saveDownloads();
     for(int i=0; i<downloadList.length(); i++) {
-        if(downloadList[i].status == StatInProgress || downloadList[i].status == StatAbout2Start)
+        if(downloadList[i].status == StatInProgress)
             downloadList[i].downloader->stop();
         downloadList[i].downloader->deleteLater();
     }
@@ -316,7 +316,7 @@ void DownloadManager::addDownloadFromJson(QJsonObject obj) {
     dwl.size = obj.value("size").toVariant().toLongLong();
     dwl.status = static_cast<DownloadStatus>(obj.value("status").toInt());
     dwl.url = obj.value("url").toString();
-    if(dwl.status == StatInProgress)
+    if(dwl.status == StatInProgress || dwl.status == StatAbout2Start)
         dwl.status = StatAborted;
     dwl.speed = 0;
     dwl.timeoutCounter = 0;
