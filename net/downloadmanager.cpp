@@ -236,7 +236,7 @@ int DownloadManager::numberOfDownloads(const DownloadStatus status) const {
 DownloadManager::~DownloadManager() {
     saveDownloads();
     for(int i=0; i<downloadList.length(); i++) {
-        if(downloadList[i].status == StatInProgress)
+        if(downloadList[i].status == StatInProgress || downloadList[i].status == StatAbout2Start)
             downloadList[i].downloader->stop();
         downloadList[i].downloader->deleteLater();
     }
